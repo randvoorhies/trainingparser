@@ -3,15 +3,16 @@
 @media all { .page-break	{ display: none; } }
 @media print { .page-break	{ display: block; page-break-before: always; } }
 
-body { font-family: helvetica; }
+body { font-family: helvetica; font-size: 8px; }
 
 th, td {
     border: 1px solid black;
-    padding: 10px;
+    padding: 6px;
 }
 
 table {
     border-collapse: collapse; 
+    font-size: 10px;
 }
 
 .logo { float: center; }
