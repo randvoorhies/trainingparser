@@ -1,12 +1,11 @@
 import sys
-from pprint import pprint
+# from pprint import pprint
 import re
-import yattag
 
 maxes = {
     'snatch': 100,
-    'c&j': 120,
-    'squat': 160
+    'c&j': 100,
+    'squat': 100
 }
 
 ######################################################################
@@ -26,6 +25,10 @@ for lineNumber, line in enumerate(infile):
     try:
         # Strip out any leading and trailing whitespace
         line = line.strip()
+
+        if line.count(':') > 1:
+            raise RuntimeError('More than one ":" character detected on line {}: "{}"'.format(
+                lineNumber + 1, line))
 
         # If the line starts with "Week", then let's start a new week
         if line.lower().startswith('week'):
@@ -78,8 +81,8 @@ for lineNumber, line in enumerate(infile):
                                 numReps = match.group(2)
                                 numSets = match.group(3)
                             else:
-                                raise RuntimeError('Unrecognized sets/reps scheme on line {}: "{}"'.format(
-                                    lineNumber + 1, line))
+                                raise runtimeerror('unrecognized sets/reps scheme on line {}: "{}"'.format(
+                                    linenumber + 1, line))
                         else:
                             # Try to match weight/reps lines
                             match = re.match(r'(\d*)%?\/(\d*\+?\d*)', setString)
@@ -143,11 +146,9 @@ weeks.append(currentWeek)
 # Output
 ######################################################################
 
-doc, tag, text = yattag.Doc().tagtext()
-
-with tag('html'):
-    with tag('head'):
-        doc.asis(r"""
+with open('output.html', 'w') as out:
+    out.write(
+        '''<html>
              <style type="text/css">
                  @media all {
                  .page-break	{ display: none; }
@@ -156,71 +157,179 @@ with tag('html'):
                  @media print {
                  .page-break	{ display: block; page-break-before: always; }
                  }
+
+                 th, td { border: 1px solid black; }
+                 table { border-collapse: collapse; }
              </style>
-             """)
-    with tag('body'):
-        with tag('h1'):
-            text('Training Log')
+        <head>
+        <body>''')
 
-        for weekNumber, week in enumerate(weeks):
+    for weekNumber, week in enumerate(weeks):
 
-            # Count the maximum number of sets for any exercise this week
-            maxSets = 0
-            for day in week['days']:
-                if day['lifts'] is not None:
-                    for lift in day['lifts']:
-                        if isinstance(lift['sets'], list):
-                            maxSets = max(maxSets, len(lift['sets']))
+        # Count the maximum number of sets for any exercise this week
+        maxSets = 0
+        for day in week['days']:
+            if day['lifts'] is not None:
+                for lift in day['lifts']:
+                    if isinstance(lift['sets'], list):
+                        maxSets = max(maxSets, len(lift['sets']))
 
-            # Print the name of the week
-            with tag('h2'):
-                text(''.format(week['name']))
+        # Print the name of the week
+        out.write('<h2>{weekName}</h2>\n'.format(weekName=week['name']))
 
-            with tag('table', border=1):
+        out.write('<table>\n')
 
-                # Print the table header
-                with tag('tr'):
-                    with tag('th'):
-                        text('Day')
-                    with tag('th'):
-                        text('Exercise')
+        # Print the table header
+        out.write('<tr>\n')
+        out.write('  <th>Day</th><th>Exercise</th>')
+        # Print the set number headers
+        for setNum in range(1, maxSets + 1):
+            out.write('  <th>Set {}</th>'.format(setNum))
+        out.write('</tr>\n')
 
-                    # Print the set number headers
-                    for setNum in range(1, maxSets + 1):
-                            with tag('th'):
-                                text('Set {}'.format(setNum))
+        for day in week['days']:
+            # Calculate the number of lifts for this day (or 1 if it is an off day)
+            numLifts = len(day['lifts']) if day['lifts'] is not None else 1
 
-                for day in week['days']:
-                    # Calculate the number of lifts for this day (or 1 if it is an off day)
-                    numLifts = len(day['lifts']) if day['lifts'] is not None else 1
+            # Write out the day cell which covers numLifts rows
+            out.write('<tr>\n')
+            out.write('<td rowspan="{rowSpan}">{dayName}</td>\n'.format(rowSpan=numLifts, dayName=day['name']))
 
-                    # Write out the day cell which covers numLifts rows
-                    with tag('tr'):
-                        with tag('td', rowspan=numLifts + 1):
-                            text(day['name'])
+            if day['lifts'] is None:
+                # If lifts is None then make this an "Off" day
+                out.write('<td colspan="{colSpan}">Off</td>\n'.format(colSpan=maxSets + 1))
+                out.write('</tr>\n')
 
-                    if day['lifts'] is not None:
+            elif isinstance(day['lifts'], list):
 
-                        # For each lift in the day, make a new row
-                        for lift in day['lifts']:
-                            with tag('tr'):
-                                with tag('td'):
-                                    text(lift['name'])
+                # For each lift in the day, make a new row
+                for liftNum, lift in enumerate(day['lifts']):
+                    if liftNum > 0:
+                        out.write('<tr>')
+                    out.write('<td>{liftName}</td>\n'.format(liftName=lift['name']))
 
-                                for i in range(0, maxSets):
-                                    with tag('td'):
-                                        text('hi')
+                    # Write out each set
+                    if isinstance(lift['sets'], list):
+                        # Right out all of the sets
+                        for s in lift['sets']:
+                            out.write('<td>{reps} @ {weight}</td>\n'.format(reps=s['reps'], weight=s['weight']))
+
+                        # Fill out the unused sets with blank space
+                        for i in range(0, maxSets - len(lift['sets'])):
+                            out.write('<td></td>\n')
                     else:
-                        # If lifts is None then make this an "Off" day
-                        with tag('tr'):
-                            with tag('td', colspan=maxSets + 1):
-                                text('Off')
+                        out.write('<td colspan="{colSpan}">{description}</td>'.format(colSpan=maxSets, description=lift['sets']))
+                    out.write('</tr>')
+            else:
+                print 'Unknown lift type:', day['lifts']
+                sys.exit(-1)
 
-            # Suggest a page-break for printers
-            if weekNumber < len(weeks) - 1:
-                with tag('div', klass='page-break'):
-                    pass
+            out.write('</tr>\n')
+
+        out.write('</table>\n')
+
+        # Suggest a page-break for printers
+        if weekNumber < len(weeks) - 1:
+            out.write('<div class="page-break"></div>')
+
+    out.write('</body>')
+    out.write('</html>')
 
 
-with open('output.html', 'w') as outfile:
-    outfile.write(doc.getvalue())
+
+# doc, tag, text = yattag.Doc().tagtext()
+
+# with tag('html'):
+#     with tag('head'):
+#         doc.asis(r"""
+#              <style type="text/css">
+#                  @media all {
+#                  .page-break	{ display: none; }
+#                  }
+# 
+#                  @media print {
+#                  .page-break	{ display: block; page-break-before: always; }
+#                  }
+# 
+#                  th, td { border: 1px solid black; }
+#                  table { border-collapse: collapse; }
+#              </style>
+#              """)
+#     with tag('body'):
+#         with tag('h1'):
+#             text('Training Log')
+# 
+#         for weekNumber, week in enumerate(weeks):
+# 
+#             # Count the maximum number of sets for any exercise this week
+#             maxSets = 0
+#             for day in week['days']:
+#                 if day['lifts'] is not None:
+#                     for lift in day['lifts']:
+#                         if isinstance(lift['sets'], list):
+#                             maxSets = max(maxSets, len(lift['sets']))
+# 
+#             # Print the name of the week
+#             with tag('h2'):
+#                 text(''.format(week['name']))
+# 
+#             with tag('table'):
+# 
+#                 # Print the table header
+#                 with tag('tr'):
+#                     with tag('th'):
+#                         text('Day')
+#                     with tag('th'):
+#                         text('Exercise')
+# 
+#                     # Print the set number headers
+#                     for setNum in range(1, maxSets + 1):
+#                             with tag('th'):
+#                                 text('Set {}'.format(setNum))
+# 
+#                 for day in week['days']:
+#                     # Calculate the number of lifts for this day (or 1 if it is an off day)
+#                     numLifts = len(day['lifts']) if day['lifts'] is not None else 1
+# 
+#                     # Write out the day cell which covers numLifts rows
+#                     with tag('tr'):
+#                         with tag('td', rowspan=numLifts + 1):
+#                             text(day['name'])
+# 
+#                     if day['lifts'] is None:
+#                         # If lifts is None then make this an "Off" day
+#                         with tag('tr'):
+#                             with tag('td', colspan=maxSets + 1):
+#                                 text('Off')
+#                     elif isinstance(day['lifts'], list):
+# 
+#                         # For each lift in the day, make a new row
+#                         for lift in day['lifts']:
+#                             with tag('tr'):
+#                                 with tag('td'):
+#                                     text(lift['name'])
+# 
+#                                 # Write out each set
+#                                 if isinstance(lift['sets'], list):
+#                                     for s in lift['sets']:
+#                                         with tag('td'):
+#                                             text('{} @ {}'.format(s['reps'], s['weight']))
+#                                     for i in range(0, maxSets - len(lift['sets'])):
+#                                         with tag('td'):
+#                                             text('')
+#                                 else:
+#                                     with tag('td', colspan=maxSets):
+#                                         text(lift['sets'])
+# 
+#                     else:
+#                         print 'Unknown lift type:', day['lifts']
+#                         sys.exit(-1)
+# 
+#             # Suggest a page-break for printers
+#             if weekNumber < len(weeks) - 1:
+#                 with tag('div', klass='page-break'):
+#                     pass
+# 
+# 
+# with open('output.html', 'w') as outfile:
+#     outfile.write(doc.getvalue())
