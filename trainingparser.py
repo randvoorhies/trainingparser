@@ -158,7 +158,7 @@ def parseTraining(inFile, maxes={}):
     return weeks
 
 
-def writeHTML(weeks, out, programName=''):
+def writeHTML(weeks, out, header='weekheader.html', programName=''):
     out.write(
         '''<html>
         <link rel="stylesheet" type="text/css" href="style.css">
@@ -176,7 +176,7 @@ def writeHTML(weeks, out, programName=''):
                         maxSets = max(maxSets, len(lift['sets']))
 
         # Print the name of the week
-        with open('weekheader.html') as weekheader:
+        with open(header) as weekheader:
             for line in weekheader:
                 line = line.replace('{Program_Name}', programName)
                 line = line.replace('{Week_Name}', week['name'])
@@ -264,4 +264,4 @@ if __name__ == '__main__':
         weeks = parseTraining(inputFile, maxes)
 
     with open(args.output, 'w') as outputFile:
-        writeHTML(weeks=weeks, out=outputFile, programName=args.programname)
+        writeHTML(weeks=weeks, out=outputFile, header='weekheader.html', programName=args.programname)

@@ -24,17 +24,27 @@ class Application(Frame):
             self.maxLabel = Label(self, textvariable=self.maxLabelText)
             self.maxLabel.grid(row=1, column=1, sticky=W)
 
+            self.openHeaderButton = Button(self, text='Open Header File', command=self.openHeaderFile)
+            self.openHeaderButton.grid(row=2, column=0, sticky=W)
+            self.headerLabelText = StringVar()
+            self.headerLabelText.set('No Header File')
+            self.headerLabel = Label(self, textvariable=self.headerLabelText)
+            self.headerLabel.grid(row=2, column=1, sticky=W)
+
             self.programNameLabel = Label(self, text='Program Name')
-            self.programNameLabel.grid(row=2, column=0, sticky=W)
+            self.programNameLabel.grid(row=3, column=0, sticky=W)
             self.programNameField = Entry(self, width=60)
             self.programNameField.insert(END, "Waxman's Gym Programming")
-            self.programNameField.grid(row=2, column=1, sticky=W)
+            self.programNameField.grid(row=3, column=1, sticky=W)
 
             self.openMaxButton = Button(self, text='Generate!', command=self.generate)
-            self.openMaxButton.grid(row=3, column=0, columnspan=2)
+            self.openMaxButton.grid(row=4, column=0, columnspan=2)
 
             self.statusText = Text(self)
-            self.statusText.grid(row=4, column=0, columnspan=2)
+            self.statusText.grid(row=5, column=0, columnspan=2)
+
+    def quit(self):
+        self.root.destroy()
 
     def generate(self):
         try:
@@ -68,7 +78,7 @@ class Application(Frame):
         try:
             self.statusText.insert(END, 'Generating output HTML file...')
             outfile = tkFileDialog.asksaveasfile(message='Output HTML')
-            trainingparser.writeHTML(weeks, outfile, self.programNameField.get())
+            trainingparser.writeHTML(weeks, outfile, header=self.headerFile, programName=self.programNameField.get())
             self.statusText.insert(END, 'Success!\n')
         except Exception as e:
             self.statusText.insert(END, 'Failed!\n')
@@ -82,6 +92,12 @@ class Application(Frame):
         self.inputLabelText.set(self.inputFile.name)
         self.statusText.insert(END, 'Opened input file: {}\n'.format(self.inputFile.name))
 
+    def openHeaderFile(self):
+        Tk().withdraw()
+        self.headerFile = tkFileDialog.askopenfilename()
+        self.headerLabelText.set(self.headerFile)
+        self.statusText.insert(END, 'Opened header file: {}\n'.format(self.headerFile.name))
+
     def openMaxFile(self):
         Tk().withdraw()
         self.maxFile = tkFileDialog.askopenfile()
@@ -91,5 +107,6 @@ class Application(Frame):
 
 root = Tk()
 app = Application(master=root)
+root.protocol("WM_DELETE_WINDOW", app.destroy)
 app.mainloop()
 root.destroy()
