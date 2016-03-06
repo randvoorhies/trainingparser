@@ -46,9 +46,9 @@ class Lift:
         self.sets = sets
 
 class Set:
-    def __init__(self):
-        self.reps = None
-        self.weight = None
+    def __init__(self, reps, weight):
+        self.reps = reps
+        self.weight = weight
 
 class SetsComment:
     def __init__(self, comment):
@@ -109,7 +109,7 @@ def parseTraining(inFile, maxes={}):
                     # If the sets and reps section starts with a hard bracket "[", then it is
                     # a special comment (e.g. [singles to max])
                     if setsAndRepsString.startswith('['):
-                        sets = setsAndRepsString.replace('[', '').replace(']', '')
+                        sets = SetsComment(setsAndRepsString.replace('[', '').replace(']', ''))
                     else:
                         # Split the sets and reps either by comma or by space
                         setStrings = [r for r in re.split('[ ,]', setsAndRepsString) if len(r) > 0]
@@ -157,10 +157,7 @@ def parseTraining(inFile, maxes={}):
 
                             # Now let's unroll the sets and reps
                             for setNumber in range(0, numSets):
-                                sets.append({
-                                    'weight': weight,
-                                    'reps': numReps
-                                })
+                                sets.append(Set(weight=weight, reps=numReps))
 
                     currentLift = {
                         'name': liftName,
@@ -248,16 +245,17 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
                         # Right out all of the sets
                         for s in lift['sets']:
                             out.write('<td>\n')
-                            out.write('  <span class="reps">{reps}</span>\n'.format(reps=s['reps']))
+                            out.write('  <span class="reps">{reps}</span>\n'.format(reps=s.reps))
                             out.write('  <span class="repsAt">@</span>\n')
-                            out.write('  <span class="weight">{weight}</span>\n'.format(weight=s['weight']))
+                            out.write('  <span class="weight">{weight}</span>\n'.format(weight=s.weight))
                             out.write('</td>\n')
 
                         # Fill out the unused sets with blank space
                         for i in range(0, maxSets - len(lift['sets'])):
                             out.write('<td class="emptyset"></td>\n')
                     else:
-                        out.write('<td class="liftdescription" colspan="{colSpan}">{description}</td>'.format(colSpan=maxSets, description=lift['sets']))
+                        out.write('<td class="liftdescription" colspan="{colSpan}">{description}</td>'.format(colSpan=maxSets, 
+                                                                                                              description=lift['sets'].comment))
                     out.write('</tr>')
             else:
                 print 'Unknown lift type:', day['lifts']
