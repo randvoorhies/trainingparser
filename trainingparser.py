@@ -29,6 +29,32 @@ def parseMaxes(maxesFile):
     return maxes
 
 
+class Week:
+    def __init__(self, name, days=[]):
+        self.name = name
+        self.days = days
+
+class Day:
+    def __init__(self, name, lifts=[]):
+        self.name = name
+        self.lifts = lifts
+
+class Lift:
+    def __init__(self, name, baseLift=None, sets=[]):
+        self.name = name
+        self.baseLift = baseLift
+        self.sets = sets
+
+class Set:
+    def __init__(self):
+        self.reps = None
+        self.weight = None
+
+class SetsComment:
+    def __init__(self, comment):
+        self.comment = comment
+
+
 def parseTraining(inFile, maxes={}):
 
     weeks = []
@@ -51,16 +77,16 @@ def parseTraining(inFile, maxes={}):
             if line.lower().startswith('week'):
                 # If we were already parsing a week, push it onto the list of weeks
                 if currentWeek is not None:
-                    currentWeek['days'].append(currentDay)
+                    currentWeek.days.append(currentDay)
                     currentDay = None
                     weeks.append(currentWeek)
-                currentWeek = {'name': line, 'days': []}
+                currentWeek = Week(name=line)
 
             # If the line starts with the name of a day, then let's start a new day
             elif line.lower().startswith(daysOfTheWeek):
                 # If we were already parsing a day, push it onto the current week's list of days
                 if currentDay is not None:
-                    currentWeek['days'].append(currentDay)
+                    currentWeek.days.append(currentDay)
                 currentDay = {'name': line, 'lifts': []}
 
             # Otherwise, interpret this as a lift and add it to the current day
@@ -169,7 +195,7 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
 
         # Count the maximum number of sets for any exercise this week
         maxSets = 0
-        for day in week['days']:
+        for day in week.days:
             if day['lifts'] is not None:
                 for lift in day['lifts']:
                     if isinstance(lift['sets'], list):
@@ -179,7 +205,7 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
         with open(header) as weekheader:
             for line in weekheader:
                 line = line.replace('{Program_Name}', programName)
-                line = line.replace('{Week_Name}', week['name'])
+                line = line.replace('{Week_Name}', week.name)
                 line = line.replace('{Week_Number}', str(weekNumber + 1))
                 line = line.replace('{Total_Weeks}', str(len(weeks)))
                 out.write(line)
@@ -194,7 +220,7 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
             out.write('  <th>Set {}</th>'.format(setNum))
         out.write('</tr>\n')
 
-        for dayNumber, day in enumerate(week['days']):
+        for dayNumber, day in enumerate(week.days):
             # Calculate the number of lifts for this day (or 1 if it is an off day)
             numLifts = len(day['lifts']) if day['lifts'] is not None else 1
 
