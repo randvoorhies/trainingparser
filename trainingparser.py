@@ -1,5 +1,6 @@
 import sys
 import re
+import copy
 
 
 def parseMaxes(maxesFile):
@@ -28,22 +29,21 @@ def parseMaxes(maxesFile):
 
     return maxes
 
-
 class Week:
-    def __init__(self, name, days=[]):
+    def __init__(self, name, days=None):
         self.name = name
-        self.days = days
+        self.days = [] if days is None else days
 
 class Day:
-    def __init__(self, name, lifts=[]):
+    def __init__(self, name, lifts=None):
         self.name = name
-        self.lifts = lifts
+        self.lifts = [] if lifts is None else lifts
 
 class Lift:
-    def __init__(self, name, baseLift=None, sets=[]):
+    def __init__(self, name, baseLift=None, sets=None):
         self.name = name
         self.baseLift = baseLift
-        self.sets = sets
+        self.sets = [] if sets is None else sets
 
 class Set:
     def __init__(self, reps, weight):
@@ -77,7 +77,7 @@ def parseTraining(inFile, maxes={}):
             if line.lower().startswith('week'):
                 # If we were already parsing a week, push it onto the list of weeks
                 if currentWeek is not None:
-                    currentWeek.days.append(currentDay)
+                    currentWeek.days.append(copy.copy(currentDay))
                     currentDay = None
                     weeks.append(currentWeek)
                 currentWeek = Week(name=line)
@@ -86,8 +86,8 @@ def parseTraining(inFile, maxes={}):
             elif line.lower().startswith(daysOfTheWeek):
                 # If we were already parsing a day, push it onto the current week's list of days
                 if currentDay is not None:
-                    currentWeek.days.append(currentDay)
-                currentDay = {'name': line, 'lifts': []}
+                    currentWeek.days.append(copy.copy(currentDay))
+                currentDay = Day(name=line)
 
             # Otherwise, interpret this as a lift and add it to the current day
             elif len(line) > 0:
@@ -133,7 +133,6 @@ def parseTraining(inFile, maxes={}):
                                     percent = match.group(1)
                                     numReps = match.group(2)
                                     numSets = 1
-                                    # print '>>>>>', setString, percent, numReps
                                 else:
                                     raise RuntimeError('Unrecognized sets/reps scheme on line {}: "{}"'.format(
                                         lineNumber + 1, line))
@@ -159,22 +158,20 @@ def parseTraining(inFile, maxes={}):
                             for setNumber in range(0, numSets):
                                 sets.append(Set(weight=weight, reps=numReps))
 
-                    currentLift = Lift(name=liftName, baseLift=baseLift, sets=sets)
-                    currentDay['lifts'].append(currentLift)
+                    currentDay.lifts.append(Lift(name=liftName, baseLift=baseLift, sets=sets))
 
-                    # print line
                 elif line.lower() == 'off':
-                    currentDay['lifts'] = None
+                    currentDay.lifts = None
                 else:
                     raise RuntimeError('Error parsing line {} (No ":" found): "{}"'.format(
                         lineNumber + 1, line))
                     # currentDay['lifts'].append({'name': line})
         except:
-            print 'Error parsing line {}: "{}"'.format(lineNumber + 1, line)
             raise
 
     weeks.append(currentWeek)
     return weeks
+
 
 
 def writeHTML(weeks, out, header='weekheader.html', programName=''):
@@ -189,8 +186,8 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
         # Count the maximum number of sets for any exercise this week
         maxSets = 0
         for day in week.days:
-            if day['lifts'] is not None:
-                for lift in day['lifts']:
+            if day.lifts is not None:
+                for lift in day.lifts:
                     if isinstance(lift.sets, list):
                         maxSets = max(maxSets, len(lift.sets))
 
@@ -215,23 +212,23 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
 
         for dayNumber, day in enumerate(week.days):
             # Calculate the number of lifts for this day (or 1 if it is an off day)
-            numLifts = len(day['lifts']) if day['lifts'] is not None else 1
+            numLifts = len(day.lifts) if day.lifts is not None else 1
 
             dayClass = 'oddDay' if dayNumber % 2 else 'evenDay'
 
             # Write out the day cell which covers numLifts rows
             out.write('<tr class="{dayClass}">\n'.format(dayClass=dayClass))
-            out.write('<td rowspan="{rowSpan}" class="day">{dayName}</td>\n'.format(rowSpan=numLifts, dayName=day['name']))
+            out.write('<td rowspan="{rowSpan}" class="day">{dayName}</td>\n'.format(rowSpan=numLifts, dayName=day.name))
 
-            if day['lifts'] is None:
+            if day.lifts is None:
                 # If lifts is None then make this an "Off" day
                 out.write('<td colspan="{colSpan}" class="off">Off</td>\n'.format(colSpan=maxSets + 1))
                 out.write('</tr>\n')
 
-            elif isinstance(day['lifts'], list):
+            elif isinstance(day.lifts, list):
 
                 # For each lift in the day, make a new row
-                for liftNum, lift in enumerate(day['lifts']):
+                for liftNum, lift in enumerate(day.lifts):
                     if liftNum > 0:
                         out.write('<tr class="{dayClass}">'.format(dayClass=dayClass))
                     out.write('<td class="liftname">{liftName}</td>\n'.format(liftName=lift.name))
@@ -254,7 +251,7 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
                                                                                                               description=lift.sets.comment))
                     out.write('</tr>')
             else:
-                print 'Unknown lift type:', day['lifts']
+                print 'Unknown lift type:', day.lifts
                 sys.exit(-1)
 
             out.write('</tr>\n')
