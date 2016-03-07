@@ -159,11 +159,7 @@ def parseTraining(inFile, maxes={}):
                             for setNumber in range(0, numSets):
                                 sets.append(Set(weight=weight, reps=numReps))
 
-                    currentLift = {
-                        'name': liftName,
-                        'baseLift': baseLift,
-                        'sets': sets
-                    }
+                    currentLift = Lift(name=liftName, baseLift=baseLift, sets=sets)
                     currentDay['lifts'].append(currentLift)
 
                     # print line
@@ -195,8 +191,8 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
         for day in week.days:
             if day['lifts'] is not None:
                 for lift in day['lifts']:
-                    if isinstance(lift['sets'], list):
-                        maxSets = max(maxSets, len(lift['sets']))
+                    if isinstance(lift.sets, list):
+                        maxSets = max(maxSets, len(lift.sets))
 
         # Print the name of the week
         with open(header) as weekheader:
@@ -238,12 +234,12 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
                 for liftNum, lift in enumerate(day['lifts']):
                     if liftNum > 0:
                         out.write('<tr class="{dayClass}">'.format(dayClass=dayClass))
-                    out.write('<td class="liftname">{liftName}</td>\n'.format(liftName=lift['name']))
+                    out.write('<td class="liftname">{liftName}</td>\n'.format(liftName=lift.name))
 
                     # Write out each set
-                    if isinstance(lift['sets'], list):
+                    if isinstance(lift.sets, list):
                         # Right out all of the sets
-                        for s in lift['sets']:
+                        for s in lift.sets:
                             out.write('<td>\n')
                             out.write('  <span class="reps">{reps}</span>\n'.format(reps=s.reps))
                             out.write('  <span class="repsAt">@</span>\n')
@@ -251,11 +247,11 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
                             out.write('</td>\n')
 
                         # Fill out the unused sets with blank space
-                        for i in range(0, maxSets - len(lift['sets'])):
+                        for i in range(0, maxSets - len(lift.sets)):
                             out.write('<td class="emptyset"></td>\n')
                     else:
                         out.write('<td class="liftdescription" colspan="{colSpan}">{description}</td>'.format(colSpan=maxSets, 
-                                                                                                              description=lift['sets'].comment))
+                                                                                                              description=lift.sets.comment))
                     out.write('</tr>')
             else:
                 print 'Unknown lift type:', day['lifts']
