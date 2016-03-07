@@ -173,11 +173,14 @@ def parseTraining(inFile, maxes={}):
     return weeks
 
 def writeXML(weeks, out):
-    from xml.etree.ElementTree import Element, SubElement, Comment, tostring
+    from lxml.etree import Element, SubElement, Comment, tostring
+    import lxml
     
     topElement = Element('training')
     for week in weeks:
         weekElement = SubElement(topElement, 'week', {'name': week.name})
+
+        maxSets = 0
 
         for day in week.days:
             dayElement = SubElement(weekElement, 'day', {'name': day.name})
@@ -187,12 +190,16 @@ def writeXML(weeks, out):
                     liftElement = SubElement(dayElement, 'lift', {'name': lift.name, 'base': lift.baseLift})
 
                     if isinstance(lift.sets, list):
+                        maxSets = max(maxSets, len(lift.sets))
                         for set_ in lift.sets:
                             SubElement(liftElement, 'set', {'reps': str(set_.reps), 'weight': str(set_.weight)})
                     else:
                         SubElement(liftElement, 'setcomment', {'comment': lift.sets.comment})
 
-    out.write(tostring(topElement))
+            weekElement.attrib['maxsets'] = str(maxSets)
+
+    template = lxml.etree.XSLT(lxml.etree.parse('template.xsl'))
+    out.write(tostring(template(topElement), pretty_print=True))
 
 
 def writeHTML(weeks, out, header='weekheader.html', programName=''):
@@ -304,5 +311,5 @@ if __name__ == '__main__':
     with open(args.output, 'w') as outputFile:
         writeHTML(weeks=weeks, out=outputFile, header='weekheader.html', programName=args.programname)
 
-    with open('out.xml', 'w') as outputFile:
+    with open('out.html', 'w') as outputFile:
         writeXML(weeks=weeks, out=outputFile)
