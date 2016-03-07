@@ -29,15 +29,25 @@ def parseMaxes(maxesFile):
 
     return maxes
 
+
+class Program:
+    def __init__(self, name, weeks=None):
+        self.name = name
+        self.weeks = [] if weeks is None else weeks
+
+
 class Week:
     def __init__(self, name, days=None):
         self.name = name
         self.days = [] if days is None else days
+        self.maxSets = 0
+
 
 class Day:
     def __init__(self, name, lifts=None):
         self.name = name
         self.lifts = [] if lifts is None else lifts
+
 
 class Lift:
     def __init__(self, name, baseLift=None, sets=None):
@@ -45,10 +55,12 @@ class Lift:
         self.baseLift = baseLift
         self.sets = [] if sets is None else sets
 
+
 class Set:
     def __init__(self, reps, weight):
         self.reps = reps
         self.weight = weight
+
 
 class SetsComment:
     def __init__(self, comment):
@@ -57,7 +69,7 @@ class SetsComment:
 
 def parseTraining(inFile, maxes={}):
 
-    weeks = []
+    program = Program("Waxman's Training Program")
 
     currentWeek = None
     currentDay = None
@@ -79,7 +91,7 @@ def parseTraining(inFile, maxes={}):
                 if currentWeek is not None:
                     currentWeek.days.append(copy.copy(currentDay))
                     currentDay = None
-                    weeks.append(currentWeek)
+                    program.weeks.append(currentWeek)
                 currentWeek = Week(name=line)
 
             # If the line starts with the name of a day, then let's start a new day
@@ -157,6 +169,7 @@ def parseTraining(inFile, maxes={}):
                             # Now let's unroll the sets and reps
                             for setNumber in range(0, numSets):
                                 sets.append(Set(weight=weight, reps=numReps))
+                        currentWeek.maxSets = max(currentWeek.maxSets, len(sets))
 
                     currentDay.lifts.append(Lift(name=liftName, baseLift=baseLift, sets=sets))
 
@@ -169,19 +182,28 @@ def parseTraining(inFile, maxes={}):
         except:
             raise
 
-    weeks.append(currentWeek)
-    return weeks
+    program.weeks.append(currentWeek)
+    return program
 
 
+def writeJinja(program, out):
+    import jinja2
+    env = jinja2.Environment()
 
-def writeHTML(weeks, out, header='weekheader.html', programName=''):
+    is_list = lambda l: isinstance(l, list)
+    env.filters.update({'is_list': is_list})
+    template = env.from_string(''.join(open('template.html').readlines()))
+    out.write(template.render(program=program))
+
+
+def writeHTML(program, out, header='weekheader.html', programName=''):
     out.write(
         '''<html>
         <link rel="stylesheet" type="text/css" href="style.css">
         <head>
         <body>''')
 
-    for weekNumber, week in enumerate(weeks):
+    for weekNumber, week in enumerate(program.weeks):
 
         # Count the maximum number of sets for any exercise this week
         maxSets = 0
@@ -197,7 +219,7 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
                 line = line.replace('{Program_Name}', programName)
                 line = line.replace('{Week_Name}', week.name)
                 line = line.replace('{Week_Number}', str(weekNumber + 1))
-                line = line.replace('{Total_Weeks}', str(len(weeks)))
+                line = line.replace('{Total_Weeks}', str(len(program.weeks)))
                 out.write(line)
 
         out.write('<table>\n')
@@ -247,8 +269,8 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
                         for i in range(0, maxSets - len(lift.sets)):
                             out.write('<td class="emptyset"></td>\n')
                     else:
-                        out.write('<td class="liftdescription" colspan="{colSpan}">{description}</td>'.format(colSpan=maxSets, 
-                                                                                                              description=lift.sets.comment))
+                        out.write('<td class="liftdescription" colspan="{colSpan}">{description}</td>'.format(
+                            colSpan=maxSets, description=lift.sets.comment))
                     out.write('</tr>')
             else:
                 print 'Unknown lift type:', day.lifts
@@ -259,7 +281,7 @@ def writeHTML(weeks, out, header='weekheader.html', programName=''):
         out.write('</table>\n')
 
         # Suggest a page-break for printers
-        if weekNumber < len(weeks) - 1:
+        if weekNumber < len(program.weeks) - 1:
             out.write('<div class="page-break"></div>')
 
     out.write('</body>')
@@ -278,7 +300,10 @@ if __name__ == '__main__':
         maxes = parseMaxes(maxFile)
 
     with open(args.input) as inputFile:
-        weeks = parseTraining(inputFile, maxes)
+        program = parseTraining(inputFile, maxes)
 
     with open(args.output, 'w') as outputFile:
-        writeHTML(weeks=weeks, out=outputFile, header='weekheader.html', programName=args.programname)
+        writeHTML(program=program, out=outputFile, header='weekheader.html', programName=args.programname)
+
+    with open('out.html', 'w') as outputFile:
+        writeJinja(program=program, out=outputFile)
