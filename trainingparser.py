@@ -29,28 +29,28 @@ def parseMaxes(maxesFile):
 
     return maxes
 
-class Week:
+class Week(object):
     def __init__(self, name, days=None):
         self.name = name
         self.days = [] if days is None else days
 
-class Day:
+class Day(object):
     def __init__(self, name, lifts=None):
         self.name = name
         self.lifts = [] if lifts is None else lifts
 
-class Lift:
-    def __init__(self, name, baseLift=None, sets=None):
+class Lift(object):
+    def __init__(self, name, baseLift='', sets=None):
         self.name = name
         self.baseLift = baseLift
         self.sets = [] if sets is None else sets
 
-class Set:
+class Set(object):
     def __init__(self, reps, weight):
         self.reps = reps
         self.weight = weight
 
-class SetsComment:
+class SetsComment(object):
     def __init__(self, comment):
         self.comment = comment
 
@@ -99,7 +99,7 @@ def parseTraining(inFile, maxes={}):
                     if '{' in line.split(':')[0]:
                         baseLift = re.search('\{(.*)\}', line).group(1).lower()
                     else:
-                        baseLift = None
+                        baseLift = ''
 
                     # Split the sets and reps string
                     setsAndRepsString = line.split(':')[1].strip()
@@ -172,6 +172,27 @@ def parseTraining(inFile, maxes={}):
     weeks.append(currentWeek)
     return weeks
 
+def writeXML(weeks, out):
+    from xml.etree.ElementTree import Element, SubElement, Comment, tostring
+    
+    topElement = Element('training')
+    for week in weeks:
+        weekElement = SubElement(topElement, 'week', {'name': week.name})
+
+        for day in week.days:
+            dayElement = SubElement(weekElement, 'day', {'name': day.name})
+
+            if day.lifts is not None:
+                for lift in day.lifts:
+                    liftElement = SubElement(dayElement, 'lift', {'name': lift.name, 'base': lift.baseLift})
+
+                    if isinstance(lift.sets, list):
+                        for set_ in lift.sets:
+                            SubElement(liftElement, 'set', {'reps': str(set_.reps), 'weight': str(set_.weight)})
+                    else:
+                        SubElement(liftElement, 'setcomment', {'comment': lift.sets.comment})
+
+    out.write(tostring(topElement))
 
 
 def writeHTML(weeks, out, header='weekheader.html', programName=''):
@@ -282,3 +303,6 @@ if __name__ == '__main__':
 
     with open(args.output, 'w') as outputFile:
         writeHTML(weeks=weeks, out=outputFile, header='weekheader.html', programName=args.programname)
+
+    with open('out.xml', 'w') as outputFile:
+        writeXML(weeks=weeks, out=outputFile)
