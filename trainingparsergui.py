@@ -63,7 +63,7 @@ class Application(Frame):
 
         try:
             self.statusText.insert(END, 'Parsing input file...')
-            weeks = trainingparser.parseTraining(self.inputFile, maxes)
+            program = trainingparser.parseTraining(self.inputFile, maxes)
             self.statusText.insert(END, 'Success!\n')
         except RuntimeError as e:
             self.statusText.insert(END, 'Failed!\n')
@@ -78,7 +78,7 @@ class Application(Frame):
         try:
             self.statusText.insert(END, 'Generating output HTML file...')
             outfile = tkFileDialog.asksaveasfile(message='Output HTML')
-            trainingparser.writeHTML(weeks, outfile, template=self.templateFile, programName=self.programNameField.get())
+            trainingparser.writeJinja(program=program, out=outfile, template=self.templateFile)
             self.statusText.insert(END, 'Success!\n')
         except Exception as e:
             self.statusText.insert(END, 'Failed!\n')
@@ -95,8 +95,8 @@ class Application(Frame):
 
     def openTemplateFile(self):
         Tk().withdraw()
-        self.templateFile = tkFileDialog.askopenfilename()
-        self.templateLabelText.set(self.templateFile)
+        self.templateFile = tkFileDialog.askopenfile()
+        self.templateLabelText.set(self.templateFile.name)
         self.statusText.insert(END, 'Opened template file: {}\n'.format(self.templateFile.name))
 
     def openMaxFile(self):

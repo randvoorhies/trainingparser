@@ -178,7 +178,6 @@ def parseTraining(inFile, maxes={}):
                 else:
                     raise RuntimeError('Error parsing line {} (No ":" found): "{}"'.format(
                         lineNumber + 1, line))
-                    # currentDay['lifts'].append({'name': line})
         except:
             raise
 
@@ -186,13 +185,13 @@ def parseTraining(inFile, maxes={}):
     return program
 
 
-def writeJinja(program, out):
+def writeJinja(program, template, out):
     import jinja2
     env = jinja2.Environment()
 
     is_list = lambda l: isinstance(l, list)
     env.filters.update({'is_list': is_list})
-    template = env.from_string(''.join(open('template.html').readlines()))
+    template = env.from_string(''.join(template.readlines()))
     out.write(template.render(program=program))
 
 
@@ -202,7 +201,7 @@ if __name__ == '__main__':
     parser.add_argument('input', type=str, help='The input text file')
     parser.add_argument('--output', type=str, default='output.html', help='The output HTML file')
     parser.add_argument('--maxes', type=str, default='maxes.txt', help='The output HTML file')
-    parser.add_argument('--programname', type=str, default='Waxmans Gym Training Program', help='The name of the training program')
+    parser.add_argument('--template', type=str, default='template.html', help='The input HTML template')
     args = parser.parse_args()
 
     with open(args.maxes) as maxFile:
@@ -212,4 +211,5 @@ if __name__ == '__main__':
         program = parseTraining(inputFile, maxes)
 
     with open(args.output, 'w') as outputFile:
-        writeJinja(program=program, out=outputFile)
+        with open(args.template) as template:
+            writeJinja(program=program, template=template, out=outputFile)
