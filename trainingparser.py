@@ -196,97 +196,6 @@ def writeJinja(program, out):
     out.write(template.render(program=program))
 
 
-def writeHTML(program, out, header='weekheader.html', programName=''):
-    out.write(
-        '''<html>
-        <link rel="stylesheet" type="text/css" href="style.css">
-        <head>
-        <body>''')
-
-    for weekNumber, week in enumerate(program.weeks):
-
-        # Count the maximum number of sets for any exercise this week
-        maxSets = 0
-        for day in week.days:
-            if day.lifts is not None:
-                for lift in day.lifts:
-                    if isinstance(lift.sets, list):
-                        maxSets = max(maxSets, len(lift.sets))
-
-        # Print the name of the week
-        with open(header) as weekheader:
-            for line in weekheader:
-                line = line.replace('{Program_Name}', programName)
-                line = line.replace('{Week_Name}', week.name)
-                line = line.replace('{Week_Number}', str(weekNumber + 1))
-                line = line.replace('{Total_Weeks}', str(len(program.weeks)))
-                out.write(line)
-
-        out.write('<table>\n')
-
-        # Print the table header
-        out.write('<tr>\n')
-        out.write('  <th>Day</th><th>Exercise</th>')
-        # Print the set number headers
-        for setNum in range(1, maxSets + 1):
-            out.write('  <th>Set {}</th>'.format(setNum))
-        out.write('</tr>\n')
-
-        for dayNumber, day in enumerate(week.days):
-            # Calculate the number of lifts for this day (or 1 if it is an off day)
-            numLifts = len(day.lifts) if day.lifts is not None else 1
-
-            dayClass = 'oddDay' if dayNumber % 2 else 'evenDay'
-
-            # Write out the day cell which covers numLifts rows
-            out.write('<tr class="{dayClass}">\n'.format(dayClass=dayClass))
-            out.write('<td rowspan="{rowSpan}" class="day">{dayName}</td>\n'.format(rowSpan=numLifts, dayName=day.name))
-
-            if day.lifts is None:
-                # If lifts is None then make this an "Off" day
-                out.write('<td colspan="{colSpan}" class="off">Off</td>\n'.format(colSpan=maxSets + 1))
-                out.write('</tr>\n')
-
-            elif isinstance(day.lifts, list):
-
-                # For each lift in the day, make a new row
-                for liftNum, lift in enumerate(day.lifts):
-                    if liftNum > 0:
-                        out.write('<tr class="{dayClass}">'.format(dayClass=dayClass))
-                    out.write('<td class="liftname">{liftName}</td>\n'.format(liftName=lift.name))
-
-                    # Write out each set
-                    if isinstance(lift.sets, list):
-                        # Right out all of the sets
-                        for s in lift.sets:
-                            out.write('<td>\n')
-                            out.write('  <span class="reps">{reps}</span>\n'.format(reps=s.reps))
-                            out.write('  <span class="repsAt">@</span>\n')
-                            out.write('  <span class="weight">{weight}</span>\n'.format(weight=s.weight))
-                            out.write('</td>\n')
-
-                        # Fill out the unused sets with blank space
-                        for i in range(0, maxSets - len(lift.sets)):
-                            out.write('<td class="emptyset"></td>\n')
-                    else:
-                        out.write('<td class="liftdescription" colspan="{colSpan}">{description}</td>'.format(
-                            colSpan=maxSets, description=lift.sets.comment))
-                    out.write('</tr>')
-            else:
-                print 'Unknown lift type:', day.lifts
-                sys.exit(-1)
-
-            out.write('</tr>\n')
-
-        out.write('</table>\n')
-
-        # Suggest a page-break for printers
-        if weekNumber < len(program.weeks) - 1:
-            out.write('<div class="page-break"></div>')
-
-    out.write('</body>')
-    out.write('</html>')
-
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Training Log Parser and Formatter')
@@ -303,7 +212,4 @@ if __name__ == '__main__':
         program = parseTraining(inputFile, maxes)
 
     with open(args.output, 'w') as outputFile:
-        writeHTML(program=program, out=outputFile, header='weekheader.html', programName=args.programname)
-
-    with open('out.html', 'w') as outputFile:
         writeJinja(program=program, out=outputFile)

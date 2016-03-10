@@ -24,12 +24,12 @@ class Application(Frame):
             self.maxLabel = Label(self, textvariable=self.maxLabelText)
             self.maxLabel.grid(row=1, column=1, sticky=W)
 
-            self.openHeaderButton = Button(self, text='Open Header File', command=self.openHeaderFile)
-            self.openHeaderButton.grid(row=2, column=0, sticky=W)
-            self.headerLabelText = StringVar()
-            self.headerLabelText.set('No Header File')
-            self.headerLabel = Label(self, textvariable=self.headerLabelText)
-            self.headerLabel.grid(row=2, column=1, sticky=W)
+            self.openTemplateButton = Button(self, text='Open Template File', command=self.openTemplateFile)
+            self.openTemplateButton.grid(row=2, column=0, sticky=W)
+            self.templateLabelText = StringVar()
+            self.templateLabelText.set('No Template File')
+            self.templateLabel = Label(self, textvariable=self.templateLabelText)
+            self.templateLabel.grid(row=2, column=1, sticky=W)
 
             self.programNameLabel = Label(self, text='Program Name')
             self.programNameLabel.grid(row=3, column=0, sticky=W)
@@ -78,11 +78,12 @@ class Application(Frame):
         try:
             self.statusText.insert(END, 'Generating output HTML file...')
             outfile = tkFileDialog.asksaveasfile(message='Output HTML')
-            trainingparser.writeHTML(weeks, outfile, header=self.headerFile, programName=self.programNameField.get())
+            trainingparser.writeHTML(weeks, outfile, template=self.templateFile, programName=self.programNameField.get())
             self.statusText.insert(END, 'Success!\n')
         except Exception as e:
             self.statusText.insert(END, 'Failed!\n')
-            self.statusText.insert(END, 'Unknown Error! Please send Rand your input and max files, and the following message:\n')
+            self.statusText.insert(
+                END, 'Unknown Error! Please send Rand your input, template and max files, and the following message:\n')
             self.statusText.insert(END, str(e) + '\n')
             return
 
@@ -92,11 +93,11 @@ class Application(Frame):
         self.inputLabelText.set(self.inputFile.name)
         self.statusText.insert(END, 'Opened input file: {}\n'.format(self.inputFile.name))
 
-    def openHeaderFile(self):
+    def openTemplateFile(self):
         Tk().withdraw()
-        self.headerFile = tkFileDialog.askopenfilename()
-        self.headerLabelText.set(self.headerFile)
-        self.statusText.insert(END, 'Opened header file: {}\n'.format(self.headerFile.name))
+        self.templateFile = tkFileDialog.askopenfilename()
+        self.templateLabelText.set(self.templateFile)
+        self.statusText.insert(END, 'Opened template file: {}\n'.format(self.templateFile.name))
 
     def openMaxFile(self):
         Tk().withdraw()
