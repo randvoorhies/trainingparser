@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="jumbotron">
+    <h1>Training Parser</h1>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+
+        <form action="" method="post" id="uploadForm" enctype=multipart/form-data>
+            <div class="form-group">
+                <label for="programFile">Program File</label>
+                <input type="file" id="programFile" name="programFile">
+                {% if 'programFile' in session %}
+                <p class="help-block">
+                    Upload a program file - or use the already uploaded file {{ session.programFileName }} 
+                    <i class="glyphicon glyphicon-ok" style="color: green"></i>
+                </p>
+                {% else %}
+                <p class="help-block">Upload a program file - None loaded 
+                <i class="glyphicon glyphicon-remove" style="color: red"></i></p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="maxFile">Max File</label>
+                <input type="file" id="maxFile" name="maxFile">
+                {% if 'maxFile' in session %}
+                <p class="help-block">
+                    Upload a max file - or use the already uploaded {{ session.maxFileName }} 
+                    <i class="glyphicon glyphicon-ok" style="color: green"></i>
+                </p>
+                {% else %}
+                <p class="help-block">Upload a max file - None loaded 
+                <i class="glyphicon glyphicon-remove" style="color:red"></i></p>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="maxFile">Format File</label>
+                <input type="file" id="formatFile" accept=".html" name="formatFile">
+                {% if 'formatFile' in session %}
+                <p class="help-block">
+                    Upload a format style file (.html) - or use the already uploaded {{ session.formatFileName }} 
+                    <i class="glyphicon glyphicon-ok" style="color: green"></i>
+                </p>
+                {% else %}
+                <p class="help-block">Upload a format style file (.html) - None loaded 
+                <i class="glyphicon glyphicon-remove" style="color: red"></i></p>
+                {% endif %}
+
+            </div>
+
+            <button type="submit" class="btn btn-default" name="upload" value="upload">
+                <i class="glyphicon glyphicon-cloud-upload"></i>
+                Upload...
+            </button>
+
+            {% set processEnabled = 'enabled' if 'formatFile' in session and 'maxFile' in session and 'programFile' in session
+            else 'disabled' %}
+
+            <button type="submit" class="btn btn-success" name="process" value="process" {{processEnabled}}>
+                <i class="glyphicon glyphicon-flash"></i>
+                Process!
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

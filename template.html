@@ -2,81 +2,134 @@
 <html>
     <head>
         <title>{{program.name}}</title>
-        <link rel="stylesheet" type="text/css" href="style.css">
+        <style>
+            /* Special page break classes to help printers */
+            @media all { .page-break	{ display: none; } }
+            @media print { .page-break	{ display: block; page-break-before: always; } }
+
+            body { font-family: helvetica; font-size: 8px; }
+
+            th, td {
+                border: 1px solid black;
+                padding: 6px;
+            }
+
+            table {
+                border-collapse: collapse; 
+                font-size: 10px;
+            }
+
+            .logo { float: center; }
+
+            /* The program name included in weekheader.html */
+            .program { font-size: 20pt; }
+
+            /* The week name included in weekheader.html */
+            .week { font-size: 16pt; }
+
+            /* Even and odd day classes so you can get alternating background colors */
+            .evenDay { background: #dddddd; }
+            .oddDay { background: #fafafa; }
+
+            /* Style for the lift name */
+            .liftname { }
+
+            /* Style for reps */
+            .reps { }
+
+            /* Style for the "@" symbol in rep schemes */
+            .repsAt { }
+
+            /* Style for the set listing */
+            .sets { }
+
+            /* Style for empty sets */
+            .emptyset { }
+
+            /* Style for special lift descriptions that span the width of the table
+             * for example: "singles to max (two misses/10 attempts)"*/
+            .liftdescription { font-style: italic}
+
+            /* Style for the day of the week */
+            .day { }
+
+            /* Style for off day set/rep cells (which span the full width of the table)*/
+            .off { text-align: center; font-weight: lighter; }
+        </style>
     </head>
     <body>
 
         {% for week in program.weeks %}
-            <div class="program">{{program.name}}</div>
-            <div class="week">{{week.name}}</div>
+        <div class="program">{{program.name}}</div>
+        <div class="week">{{week.name}}</div>
 
-            <table>
-                {# Table Header #}
-                <tr>
-                    <th>Day</th>
-                    <th>Exercise</th>
-                    {% for setNumber in range(1, week.maxSets+1) %}
-                        <th>Set {{setNumber}}</th>
+        <table>
+            {# Table Header #}
+            <tr>
+                <th>Day</th>
+                <th>Exercise</th>
+                {% for setNumber in range(1, week.maxSets+1) %}
+                <th>Set {{setNumber}}</th>
+                {% endfor %}
+            </tr>
+
+            {# Loop over days #}
+            {% for day in week.days %}
+
+            {% set dayClass = 'oddDay' if loop.index % 2 else 'evenDay' %}
+
+            {% if day.lifts == None %}
+            {# If the day is an off day, just write a big cell #}
+
+            <tr class="{{dayClass}}">
+                <td class="day">{{day.name}}</td>
+                <td class="off" colspan="{{week.maxSets + 1}}">Off</td>
+            </tr>
+            {% else %}
+            {# Otherwise, write out all of the lifts and sets #}
+
+            <tr class="{{dayClass}}">
+
+                {# The name of the day #}
+                <td class="day" rowspan="{{day.lifts|length}}">{{day.name}}</td>
+
+                {# Loop over lifts #}
+                {% for lift in day.lifts %}
+                {# Extra row tag for formatting big day names #}
+                {% if loop.index > 1 %} <tr class="{{dayClass}}"> {% endif %}
+
+                    {# Print the lift name #}
+                    <td style="liftname">{{lift.name}}</td>
+
+                    {% if lift.sets|is_list %}
+                    {# Print out all of the sets for this lift #}
+                    {% for set in lift.sets %}
+                    <td>
+                        <span class="reps">{{set.reps}}</span>
+                        <span class="repsAt">@</span>
+                        <span class="weight">{{set.weight}}</span>
+                    </td>
+                    {% endfor %}
+
+                    {# Print out blank cells to fill out the rest of the sets #}
+                    {% for s in range(lift.sets|length, week.maxSets) %}
+                    <td class="emptyset"></td>
+                    {% endfor %}
+                    {% else %}
+                    <td class="liftdescription" colspan={{week.maxSets}}>{{lift.sets.comment}}</td>
+                    {% endif %}
+
                     {% endfor %}
                 </tr>
-
-                {# Loop over days #}
-                {% for day in week.days %}
-
-                    {% set dayClass = 'oddDay' if loop.index % 2 else 'evenDay' %}
-
-                    {% if day.lifts == None %}
-                        {# If the day is an off day, just write a big cell #}
-
-                        <tr class="{{dayClass}}">
-                            <td class="day">{{day.name}}</td>
-                            <td class="off" colspan="{{week.maxSets + 1}}">Off</td>
-                        </tr>
-                    {% else %}
-                        {# Otherwise, write out all of the lifts and sets #}
-
-                        <tr class="{{dayClass}}">
-
-                        {# The name of the day #}
-                        <td class="day" rowspan="{{day.lifts|length}}">{{day.name}}</td>
-
-                        {# Loop over lifts #}
-                        {% for lift in day.lifts %}
-                            {# Extra row tag for formatting big day names #}
-                            {% if loop.index > 1 %} <tr class="{{dayClass}}"> {% endif %}
-
-                            {# Print the lift name #}
-                            <td style="liftname">{{lift.name}}</td>
-
-                            {% if lift.sets|is_list %}
-                                {# Print out all of the sets for this lift #}
-                                {% for set in lift.sets %}
-                                    <td>
-                                        <span class="reps">{{set.reps}}</span>
-                                        <span class="repsAt">@</span>
-                                        <span class="weight">{{set.weight}}</span>
-                                    </td>
-                                {% endfor %}
-
-                                {# Print out blank cells to fill out the rest of the sets #}
-                                {% for s in range(lift.sets|length, week.maxSets) %}
-                                    <td class="emptyset"></td>
-                                {% endfor %}
-                            {% else %}
-                                <td class="liftdescription" colspan={{week.maxSets}}>{{lift.sets.comment}}</td>
-                            {% endif %}
-
-                        {% endfor %}
-                        </tr>
-                    {% endif %}
+                {% endif %}
 
                 {% endfor %}
 
-            </table>
+        </table>
 
-            {% if loop.index < loop.length %}
-                <div class="page-break"></div>
-            {% endif %}
+        {% if loop.index < loop.length %}
+        <div class="page-break"></div>
+        {% endif %}
 
         {% endfor %}
 
