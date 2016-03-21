@@ -1,6 +1,7 @@
 import trainingparser
 from Tkinter import Frame, Button, Tk, Text, Label, Entry, StringVar, N, S, E, W, END
 import tkFileDialog
+import ConfigParser
 
 
 class Application(Frame):
@@ -10,38 +11,38 @@ class Application(Frame):
         self.createWidgets()
 
     def createWidgets(self):
-            self.openInputButton = Button(self, text='Open Input File', command=self.openInputFile)
-            self.openInputButton.grid(row=0, column=0, sticky=W)
-            self.inputLabelText = StringVar()
-            self.inputLabelText.set('No Input File')
-            self.inputLabel = Label(self, textvariable=self.inputLabelText)
-            self.inputLabel.grid(row=0, column=1, sticky=W)
+        self.openInputButton = Button(self, text='Open Input File', command=self.openInputFile)
+        self.openInputButton.grid(row=0, column=0, sticky=W)
+        self.inputLabelText = StringVar()
+        self.inputLabelText.set('No Input File')
+        self.inputLabel = Label(self, textvariable=self.inputLabelText)
+        self.inputLabel.grid(row=0, column=1, sticky=W)
 
-            self.openMaxButton = Button(self, text='Open Max File', command=self.openMaxFile)
-            self.openMaxButton.grid(row=1, column=0, sticky=W)
-            self.maxLabelText = StringVar()
-            self.maxLabelText.set('No Max File')
-            self.maxLabel = Label(self, textvariable=self.maxLabelText)
-            self.maxLabel.grid(row=1, column=1, sticky=W)
+        self.openMaxButton = Button(self, text='Open Max File', command=self.openMaxFile)
+        self.openMaxButton.grid(row=1, column=0, sticky=W)
+        self.maxLabelText = StringVar()
+        self.maxLabelText.set('No Max File')
+        self.maxLabel = Label(self, textvariable=self.maxLabelText)
+        self.maxLabel.grid(row=1, column=1, sticky=W)
 
-            self.openTemplateButton = Button(self, text='Open Template File', command=self.openTemplateFile)
-            self.openTemplateButton.grid(row=2, column=0, sticky=W)
-            self.templateLabelText = StringVar()
-            self.templateLabelText.set('No Template File')
-            self.templateLabel = Label(self, textvariable=self.templateLabelText)
-            self.templateLabel.grid(row=2, column=1, sticky=W)
+        self.openTemplateButton = Button(self, text='Open Template File', command=self.openTemplateFile)
+        self.openTemplateButton.grid(row=2, column=0, sticky=W)
+        self.templateLabelText = StringVar()
+        self.templateLabelText.set('No Template File')
+        self.templateLabel = Label(self, textvariable=self.templateLabelText)
+        self.templateLabel.grid(row=2, column=1, sticky=W)
 
-            self.programNameLabel = Label(self, text='Program Name')
-            self.programNameLabel.grid(row=3, column=0, sticky=W)
-            self.programNameField = Entry(self, width=60)
-            self.programNameField.insert(END, "Waxman's Gym Programming")
-            self.programNameField.grid(row=3, column=1, sticky=W)
+        self.programNameLabel = Label(self, text='Program Name')
+        self.programNameLabel.grid(row=3, column=0, sticky=W)
+        self.programNameField = Entry(self, width=60)
+        self.programNameField.insert(END, "Waxman's Gym Programming")
+        self.programNameField.grid(row=3, column=1, sticky=W)
 
-            self.openMaxButton = Button(self, text='Generate!', command=self.generate)
-            self.openMaxButton.grid(row=4, column=0, columnspan=2)
+        self.openMaxButton = Button(self, text='Generate!', command=self.generate)
+        self.openMaxButton.grid(row=4, column=0, columnspan=2)
 
-            self.statusText = Text(self)
-            self.statusText.grid(row=5, column=0, columnspan=2)
+        self.statusText = Text(self)
+        self.statusText.grid(row=5, column=0, columnspan=2)
 
     def quit(self):
         self.root.destroy()
