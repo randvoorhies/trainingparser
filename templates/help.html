@@ -1,43 +1,16 @@
 {% extends "base.html" %}
+{% set active_page = "help" %}
 {% block content %}
 
-
-<h1>Training Format Parser</h1>
-
-The following is a short snippet from an input programming file:
-
-<pre>
-Week 1
-Monday
-Power Snatch + Overhead Squat {snatch}: 60%/3+3, (70%/3+3)3
-Power Clean + Jerk. {c&j}: 60%/3+3, (70%/3+3)3 
-Clean Extension {c&j}: (85%/3)3
-Back Squat {squat}: 60%/3, 70%/3, (80%/3)3
-Good Morning: (X/6)4 
-Snatch Balance {snatch}: 50%/3, 60%/3, (70%/1)/4
-
-Tuesday
-Snatch {snatch}: 60%/3, 70%/3, 80%/3, (85%/3)3 
-Clean & Jerk {c&j}: 60%/3, 70%/3, 80%/3, (85%/3)3 
-Snatch Extension {snatch}: (85%/3)3
-Press: (X/5)4 
-
-Wednesday
-Power Snatch + Overhead Squat {snatch}: 60%/3+3, (70%/3+3)3
-Power Clean + Jerk {c&j}: 60%/3+3, (70%/3+3)3 
-Clean Extension {c&j}: (85%/3)3
-Back Squat {squat}: 60%/3, 70%/3, 80%/3 (85/3)3
-Good Morning: (X/6)4 
-
-Thursday
-Off
-</pre>
+<h1>Training File Format</h1>
 
 <h2>Training Days</h2>
 <ul>
-    <li>Lines beginning with <code>Week X</code> (e.g. <code>Week 1</code>, <code>Week 2</code>, etc) will start a new week</li>
-    <li>Underneath each <code>Week X</code>, lines which contain <code>Monday</code>...<code>Sunday</code> will start a new training day</li>
-    <li>Each line underneath a training day will be interpreted as a lift, followed by sets and reps for that lift.</li>
+    <li>Lines beginning with <code>Week #</code> (e.g. <code>Week 1</code>, <code>Week 2</code>, etc) will start a new week</li>
+    <li>Underneath each <code>Week #</code>, lines which contain <code>Monday</code>...<code>Sunday</code> will start a new training day</li>
+    <ul>
+        <li>Each line underneath a training day will be interpreted as a lift, followed by sets and reps for that lift.</li>
+    </ul>
 </ul>
 
 <h2>Lifts</h2>
@@ -45,7 +18,7 @@ A typical lift line is written as follows:
 <code>PSn {snatch}: 60/2 65/2 70/2 (75/1)2</code>
 
 <ul>
-    <li>The section before the colon indicates the name of the lift, with an optional "base lift" name in curly braces.</li>
+    <li>The section before the colon indicates the name of the lift, with an optional "base lift" name in curly braces (e.g. <code>{snatch}</code>).</li>
     <li>If a base lift is present, it will be used to calculate any percentages on the rest of the line</li>
     <li> Sets and reps are written after the colon</li>
 </ul>
@@ -70,10 +43,46 @@ All reps will ignore "+" characters, so that you can also write complexes as fol
 <h2>Go for a max!</h2>
 
 Sometimes, you may want to give a freeform sentence instead of rigid sets and
-reps for a given lift.  You can do this by enclosing your sentence in hard
+reps for a given lift.  You can do this by enclosing your sentence in square
 brackets and putting it in place of a sets/reps scheme. For example:
 
 <code>Clean & Jerk: [singles to max (two misses/10 attempts)]</code>
+
+<h2>Off Days</h2>
+
+If you simply omit a day, it just won't be included in the output table. In the
+example below, Tuesday of Week 1 just won't be included in the output. However,
+you may want to explicitly state that a day is an "off" day. You can do this by
+just writting the word <code>Off</code> underneath that day, which will create
+a special row in the output file that just says "Off".
+
+<h2>Example</h2>
+
+The following is a short snippet from an example input programming file:
+
+<pre>
+Week 1
+Monday
+Power Snatch + Overhead Squat {snatch}: 60%/3+3, (70%/3+3)3
+Power Clean + Jerk. {c&j}: 60%/3+3, (70%/3+3)3 
+Back Squat {squat}: 60%/3, 70%/3, (80%/3)3
+Good Morning: (X/6)4 
+
+Wednesday
+Off
+
+Friday
+Power Snatch + Overhead Squat {snatch}: 60%/3+3, (70%/3+3)3
+Power Clean + Jerk {c&j}: 60%/3+3, (70%/3+3)3 
+Clean Extension {c&j}: (85%/3)3
+Back Squat {squat}: 60%/3, 70%/3, 80%/3 (85/3)3
+Good Morning: (X/6)4 
+
+Week 2
+Tuesday
+Press: (X/5)4 
+PCl Abv Kn {clean}: [As many reps as possible until you explode]
+</pre>
 
 {% endblock %}
 

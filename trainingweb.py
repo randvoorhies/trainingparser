@@ -8,6 +8,10 @@ app = Flask(__name__)
 
 ALLOWED_EXTENSIONS = set(['txt', 'html', 'input', 'training', 'program', 'max', 'maxes'])
 
+@app.route('/fonts/<fontname>')
+def fonts(fontname):
+    return redirect(url_for('static', filename='fonts/'+fontname))
+
 @app.route('/help')
 def help():
     return render_template('help.html')
