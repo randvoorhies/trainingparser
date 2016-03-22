@@ -6,66 +6,128 @@
     <p>Training Program Parser | Formatter</p>
 </div>
 
-<div class="panel panel-default">
-    <div class="panel-body">
+<div class="row">
+    <div class="col-sm-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">Upload a Program</div>
+            <div class="panel-body">
 
-        <form action="" method="post" id="uploadForm" enctype=multipart/form-data>
-            <div class="form-group">
-                <label for="programFile">Program File</label>
-                <input type="file" id="programFile" name="programFile">
-                {% if 'programFile' in session %}
-                <p class="help-block">
-                    Upload a program file - or use the already uploaded file {{ session.programFileName }} 
-                    <i class="fa fa-check" style="color: green"></i>
-                </p>
-                {% else %}
-                <p class="help-block">Upload a program file - None loaded 
-                <i class="fa fa-times" style="color: red"></i></p>
-                {% endif %}
-            </div>
+                <form action="uploadprogram" method="post" enctype=multipart/form-data>
+                    <div class="form-group">
+                        <label for="programFile">Program File</label>
+                        <input type="file" id="programFile" name="programFile" onchange="this.form.submit()" >
+                        {% if 'programFile' in session %}
+                        <p class="help-block">
+                        Upload a program file - or use the already uploaded file {{ session.programFileName }} 
+                        <i class="fa fa-check" style="color: green"></i>
+                        </p>
+                        {% else %}
+                        <p class="help-block">Upload a program file - None loaded 
+                        <i class="fa fa-times" style="color: red"></i></p>
+                        {% endif %}
+                    </div>
+                </form>
 
-            <div class="form-group">
-                <label for="maxFile">Max File</label>
-                <input type="file" id="maxFile" name="maxFile">
-                {% if 'maxFile' in session %}
-                <p class="help-block">
-                    Upload a max file - or use the already uploaded {{ session.maxFileName }} 
-                    <i class="fa fa-check" style="color: green"></i>
-                </p>
-                {% else %}
-                <p class="help-block">Upload a max file - None loaded 
-                <i class="fa fa-times" style="color:red"></i></p>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label for="maxFile">Format File</label>
-                <input type="file" id="formatFile" accept=".html" name="formatFile">
-                {% if 'formatFile' in session %}
-                <p class="help-block">
+                <form action="uploadformat" method="post" enctype=multipart/form-data>
+                    <label for="formatFile">Format File</label>
+                    <input type="file" id="formatFile" accept=".html" name="formatFile" onchange="this.form.submit()">
+                    {% if 'formatFile' in session %}
+                    <p class="help-block">
                     Upload a format style file (.html) - or use the already uploaded {{ session.formatFileName }} 
                     <i class="fa fa-check" style="color: green"></i>
-                </p>
-                {% else %}
-                <p class="help-block">Upload a format style file (.html) - None loaded 
-                <i class="fa fa-times" style="color: red"></i></p>
+                    </p>
+                    {% else %}
+                    <p class="help-block">Upload a format style file (.html) - None loaded 
+                    <i class="fa fa-times" style="color: red"></i></p>
+                    {% endif %}
+                </form>
+
+
+                {#
+                <form action="" method="post" id="uploadForm" enctype=multipart/form-data>
+                    <div class="form-group">
+                        <label for="programFile">Program File</label>
+                        <input type="file" id="programFile" name="programFile">
+                        {% if 'programFile' in session %}
+                        <p class="help-block">
+                        Upload a program file - or use the already uploaded file {{ session.programFileName }} 
+                        <i class="fa fa-check" style="color: green"></i>
+                        </p>
+                        {% else %}
+                        <p class="help-block">Upload a program file - None loaded 
+                        <i class="fa fa-times" style="color: red"></i></p>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formatFile">Format File</label>
+                        <input type="file" id="formatFile" accept=".html" name="formatFile">
+                        {% if 'formatFile' in session %}
+                        <p class="help-block">
+                        Upload a format style file (.html) - or use the already uploaded {{ session.formatFileName }} 
+                        <i class="fa fa-check" style="color: green"></i>
+                        </p>
+                        {% else %}
+                        <p class="help-block">Upload a format style file (.html) - None loaded 
+                        <i class="fa fa-times" style="color: red"></i></p>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-default" name="upload" value="upload">
+                        <i class="fa fa-cloud-upload"></i>
+                        Upload...
+                    </button>
+                    #}
+
+                </form>
+            </div> {# panel-body #}
+        </div> {# panel #}
+    </div>{# col #}
+    <div class="col-sm-4">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">Generate Output</div>
+            <div class="panel-body">
+                {% if 'programFile' in session %}
+
+                <h3>Single Generation</h3>
+
+                <form class="form-horizontal" action="generatesingle" method="post" id="uploadForm" >
+                    {% for baseLift in session.program.baseLifts %}
+                    <div class="form-group">
+                        <label for="lift{{baseLift}}" class="control-label col-sm-2">{{baseLift}}</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="lift{{baseLift}}" value="100">
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% set processEnabled = 'enabled' if 'formatFile' in session and 'programFile' in session else 'disabled' %}
+                    <button type="submit" class="btn btn-success" name="process" value="process" {{processEnabled}}>
+                        <i class="fa fa-gears"></i>
+                        Generate HTML
+                    </button>
+
+                </form>
+                <hr/>
+
+                <h3>Bulk Generation</h3>
+
+                <form action="generatebulk" method="post" enctype=multipart/form-data>
+                    <div class="form-group">
+                        <label for="maxesFile">Upload a bulk maxes file</label>
+                        <input type="file" id="maxesFile" name="maxesFile" onchange="this.form.submit()" >
+                        <p class="help-block">
+                        Upload a bulk maxes file and generate the results as a .zip of output files
+                        </p>
+                    </div>
+                </form>
+
+
                 {% endif %}
+            </div> {# panel-body #}
+        </div> {# panel #}
 
-            </div>
-
-            <button type="submit" class="btn btn-default" name="upload" value="upload">
-                <i class="fa fa-cloud-upload"></i>
-                Upload...
-            </button>
-
-            {% set processEnabled = 'enabled' if 'formatFile' in session and 'maxFile' in session and 'programFile' in session
-            else 'disabled' %}
-
-            <button type="submit" class="btn btn-success" name="process" value="process" {{processEnabled}}>
-                <i class="fa fa-gears"></i>
-                Process!
-            </button>
-        </form>
     </div>
-</div>
+</div><!-- row -->
 {% endblock %}

@@ -7,26 +7,18 @@ def parseMaxes(maxesFile):
     maxes = {}
     for lineNumber, line in enumerate(maxesFile):
         line = line.strip()
-        if len(line) == 0:
+        if len(line) == 0 or line[0] == '#':
             continue
 
-        match = re.search(r'(.*): +([0-9]*\.?[0-9]*)', line)
-        if not match:
-            raise RuntimeError('Error parsing line {} : "{}"'.format(lineNumber, line))
+        if line.count('|') != 1:
+            raise RuntimeError('Error finding "|" character on line {} : "{}"'.format(lineNumber, line))
 
-        liftName = match.group(1).strip().lower()
-        weight = match.group(2)
-
-        if liftName in maxes:
-            raise RuntimeError('Duplicate max found on line {} : {}'.format(lineNumber, liftName))
-
+        name, rest = [x.strip() for x in line.split('|')]
         try:
-            weight = float(weight)
-        except ValueError:
-            raise RuntimeError('Error interpreting weight as a number on line {} : "{}"'.format(lineNumber, line))
-
-        maxes[liftName] = float(weight)
-
+            maxes[name] = dict((kv.split(':')[0].strip(), float(kv.split(':')[1])) for kv in rest.split(','))
+        except:
+            raise RuntimeError('Error parsing line {} : "{}"'.format(lineNumber, line))
+        
     return maxes
 
 
@@ -168,7 +160,8 @@ def parseTraining(inFile):
                         currentWeek.maxSets = max(currentWeek.maxSets, len(sets))
 
                     currentDay.lifts.append(Lift(name=liftName, baseLift=baseLift, sets=sets))
-                    program.baseLifts.add(baseLift)
+                    if baseLift is not None:
+                        program.baseLifts.add(baseLift)
 
                 elif line.lower() == 'off':
                     currentDay.lifts = None
@@ -193,21 +186,21 @@ def writeJinja(program, template, maxes, out):
     out.write(template.render(program=program, maxes=maxes))
 
 
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description='Training Log Parser and Formatter')
-    parser.add_argument('input', type=str, help='The input text file')
-    parser.add_argument('--output', type=str, default='output.html', help='The output HTML file')
-    parser.add_argument('--maxes', type=str, default='maxes.txt', help='The output HTML file')
-    parser.add_argument('--template', type=str, default='template.html', help='The input HTML template')
-    args = parser.parse_args()
-
-    with open(args.maxes) as maxFile:
-        maxes = parseMaxes(maxFile)
-
-    with open(args.input) as inputFile:
-        program = parseTraining(inputFile)
-
-    with open(args.output, 'w') as outputFile:
-        with open(args.template) as template:
-            writeJinja(program=program, template=template, maxes=maxes, out=outputFile)
+# if __name__ == '__main__':
+#     import argparse
+#     parser = argparse.ArgumentParser(description='Training Log Parser and Formatter')
+#     parser.add_argument('input', type=str, help='The input text file')
+#     parser.add_argument('--output', type=str, default='output.html', help='The output HTML file')
+#     parser.add_argument('--maxes', type=str, default='maxes.txt', help='The output HTML file')
+#     parser.add_argument('--template', type=str, default='template.html', help='The input HTML template')
+#     args = parser.parse_args()
+# 
+#     with open(args.maxes) as maxFile:
+#         maxes = parseMaxes(maxFile)
+# 
+#     with open(args.input) as inputFile:
+#         program = parseTraining(inputFile)
+# 
+#     with open(args.output, 'w') as outputFile:
+#         with open(args.template) as template:
+#             writeJinja(program=program, template=template, maxes=maxes, out=outputFile)
