@@ -4,6 +4,35 @@
 
 <h1>Training Format Parser</h1>
 
+The following is a short snippet from an input programming file:
+
+<pre>
+Week 1
+Monday
+Power Snatch + Overhead Squat {snatch}: 60%/3+3, (70%/3+3)3
+Power Clean + Jerk. {c&j}: 60%/3+3, (70%/3+3)3 
+Clean Extension {c&j}: (85%/3)3
+Back Squat {squat}: 60%/3, 70%/3, (80%/3)3
+Good Morning: (X/6)4 
+Snatch Balance {snatch}: 50%/3, 60%/3, (70%/1)/4
+
+Tuesday
+Snatch {snatch}: 60%/3, 70%/3, 80%/3, (85%/3)3 
+Clean & Jerk {c&j}: 60%/3, 70%/3, 80%/3, (85%/3)3 
+Snatch Extension {snatch}: (85%/3)3
+Press: (X/5)4 
+
+Wednesday
+Power Snatch + Overhead Squat {snatch}: 60%/3+3, (70%/3+3)3
+Power Clean + Jerk {c&j}: 60%/3+3, (70%/3+3)3 
+Clean Extension {c&j}: (85%/3)3
+Back Squat {squat}: 60%/3, 70%/3, 80%/3 (85/3)3
+Good Morning: (X/6)4 
+
+Thursday
+Off
+</pre>
+
 <h2>Training Days</h2>
 <ul>
     <li>Lines beginning with <code>Week X</code> (e.g. <code>Week 1</code>, <code>Week 2</code>, etc) will start a new week</li>
