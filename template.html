@@ -6,9 +6,9 @@
             /* Special page break classes to help printers */
             @media all { .page-break	{ display: none; } }
             @media print { .page-break	{ display: block; page-break-before: always; } }
-
+            
             body { font-family: helvetica; font-size: 8px; }
-
+            
             th, td {
                 border: 1px solid black;
                 padding: 6px;
@@ -42,6 +42,13 @@
 
             /* Style for the set listing */
             .sets { }
+
+            /* Style for a calculated weight */
+            .weight { }
+            /* Style when the given weight is just 'X' */
+            .weightX { }
+            /* Style when a weight cannot be calculated (not in known maxes), and so a percentage is used */
+            .percent { }
 
             /* Style for empty sets */
             .emptyset { }
@@ -93,10 +100,10 @@
                 {# The name of the day #}
                 <td class="day" rowspan="{{day.lifts|length}}">{{day.name}}</td>
 
-                {# Loop over lifts #}
                 {% for lift in day.lifts %}
-                {# Extra row tag for formatting big day names #}
-                {% if loop.index > 1 %} <tr class="{{dayClass}}"> {% endif %}
+
+                    {# Extra row tag for formatting big day names #}
+                    {% if loop.index > 1 %} <tr class="{{dayClass}}"> {% endif %}
 
                     {# Print the lift name #}
                     <td style="liftname">{{lift.name}}</td>
@@ -108,28 +115,29 @@
                         <span class="reps">{{set.reps}}</span>
                         <span class="repsAt">@</span>
                         {% if lift.baseLift in maxes %}
-                            <span class="weight">{{ (set.percent * maxes[lift.baseLift] / 100.0) | format_weight }}kg</span>
+                        <span class="weight">{{ (set.percent * maxes[lift.baseLift] / 100.0) | format_weight }}kg</span>
                         {% elif set.percent == 'X' or set.percent == 'x' %}
-                            <span class="weight">{{set.percent}}</span>
+                        <span class="weightX">{{set.percent}}</span>
                         {% else %}
-                            <span class="weight">{{set.percent}}%</span>
+                        <span class="percentage">{{set.percent}}%</span>
                         {% endif %}
                     </td>
-                    {% endfor %}
+                    {% endfor %} {# for set in lift.sets #}
 
                     {# Print out blank cells to fill out the rest of the sets #}
                     {% for s in range(lift.sets|length, week.maxSets) %}
                     <td class="emptyset"></td>
                     {% endfor %}
+
                     {% else %}
                     <td class="liftdescription" colspan={{week.maxSets}}>{{lift.sets.comment}}</td>
                     {% endif %}
 
-                    {% endfor %}
-                </tr>
-                {% endif %}
+                    {% endfor %} {# for lift in day.lifts #}
+                    </tr>
+                    {% endif %}
 
-                {% endfor %}
+                    {% endfor %} {# for day in week.days #}
 
         </table>
 
@@ -141,3 +149,4 @@
 
     </body>
 </html>
+<!-- vim: set filetype=jinja: --> 
