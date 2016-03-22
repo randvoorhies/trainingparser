@@ -107,7 +107,13 @@
                     <td>
                         <span class="reps">{{set.reps}}</span>
                         <span class="repsAt">@</span>
-                        <span class="weight">{{set.weight}}</span>
+                        {% if lift.baseLift in maxes %}
+                            <span class="weight">{{ (set.percent * maxes[lift.baseLift] / 100.0) | format_weight }}kg</span>
+                        {% elif set.percent == 'X' or set.percent == 'x' %}
+                            <span class="weight">{{set.percent}}</span>
+                        {% else %}
+                            <span class="weight">{{set.percent}}%</span>
+                        {% endif %}
                     </td>
                     {% endfor %}
 

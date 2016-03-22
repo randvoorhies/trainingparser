@@ -34,6 +34,7 @@ class Program:
     def __init__(self, name, weeks=None):
         self.name = name
         self.weeks = [] if weeks is None else weeks
+        self.baseLifts = set()
 
 
 class Week:
@@ -57,9 +58,9 @@ class Lift:
 
 
 class Set:
-    def __init__(self, reps, weight):
+    def __init__(self, reps, percent):
         self.reps = reps
-        self.weight = weight
+        self.percent = percent
 
 
 class SetsComment:
@@ -67,7 +68,7 @@ class SetsComment:
         self.comment = comment
 
 
-def parseTraining(inFile, maxes={}):
+def parseTraining(inFile):
 
     program = Program("Waxman's Training Program")
 
@@ -161,17 +162,13 @@ def parseTraining(inFile, maxes={}):
                             numReps = numReps
                             numSets = int(numSets)
 
-                            if baseLift in maxes:
-                                weight = percent / 100.0 * maxes[baseLift]
-                            else:
-                                weight = percent
-
                             # Now let's unroll the sets and reps
                             for setNumber in range(0, numSets):
-                                sets.append(Set(weight=weight, reps=numReps))
+                                sets.append(Set(percent=percent, reps=numReps))
                         currentWeek.maxSets = max(currentWeek.maxSets, len(sets))
 
                     currentDay.lifts.append(Lift(name=liftName, baseLift=baseLift, sets=sets))
+                    program.baseLifts.add(baseLift)
 
                 elif line.lower() == 'off':
                     currentDay.lifts = None
@@ -185,14 +182,15 @@ def parseTraining(inFile, maxes={}):
     return program
 
 
-def writeJinja(program, template, out):
+def writeJinja(program, template, maxes, out):
     import jinja2
     env = jinja2.Environment()
 
     is_list = lambda l: isinstance(l, list)
-    env.filters.update({'is_list': is_list})
+    format_weight = lambda w: round(w * 2.0) / 2
+    env.filters.update({'is_list': is_list, 'format_weight': format_weight})
     template = env.from_string(''.join(template.readlines()))
-    out.write(template.render(program=program))
+    out.write(template.render(program=program, maxes=maxes))
 
 
 if __name__ == '__main__':
@@ -208,8 +206,8 @@ if __name__ == '__main__':
         maxes = parseMaxes(maxFile)
 
     with open(args.input) as inputFile:
-        program = parseTraining(inputFile, maxes)
+        program = parseTraining(inputFile)
 
     with open(args.output, 'w') as outputFile:
         with open(args.template) as template:
-            writeJinja(program=program, template=template, out=outputFile)
+            writeJinja(program=program, template=template, maxes=maxes, out=outputFile)

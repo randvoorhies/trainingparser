@@ -42,10 +42,10 @@ def index():
                 formatFileIO = StringIO.StringIO(session['formatFile'])
 
                 maxes = trainingparser.parseMaxes(maxFileIO)
-                program = trainingparser.parseTraining(programFileIO, maxes)
+                program = trainingparser.parseTraining(programFileIO)
 
                 outputFileIO = StringIO.StringIO()
-                trainingparser.writeJinja(program=program, template=formatFileIO, out=outputFileIO)
+                trainingparser.writeJinja(program=program, template=formatFileIO, maxes=maxes, out=outputFileIO)
 
                 print 'Processing...'
                 return render_template('processed_file.html', program=outputFileIO.getvalue())

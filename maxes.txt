@@ -1,4 +1,3 @@
-snatch: 100
+snatch: 91
 c&j: 100
 squat: 100
-
