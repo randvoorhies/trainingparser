@@ -24,6 +24,9 @@
             /* The program name included in weekheader.html */
             .program { font-size: 20pt; }
 
+            /* Information about the trainee */
+            .trainee { font-size: 10pt; }
+
             /* The week name included in weekheader.html */
             .week { font-size: 16pt; }
 
@@ -48,7 +51,7 @@
             /* Style when the given weight is just 'X' */
             .weightX { }
             /* Style when a weight cannot be calculated (not in known maxes), and so a percentage is used */
-            .percent { }
+            .percentage { color: red; font-weight: bold; }
 
             /* Style for empty sets */
             .emptyset { }
@@ -67,7 +70,7 @@
     <body>
 
         {% for week in program.weeks %}
-        <div class="program">{{program.name}}</div>
+        <div class="program">{{program.name}} <span class="trainee">Customized for {{trainee}}</span></div>
         <div class="week">{{week.name}}</div>
 
         <table>
@@ -114,6 +117,7 @@
                     <td>
                         <span class="reps">{{set.reps}}</span>
                         <span class="repsAt">@</span>
+
                         {% if lift.baseLift in maxes %}
                         <span class="weight">{{ (set.percent * maxes[lift.baseLift] / 100.0) | format_weight }}kg</span>
                         {% elif set.percent == 'X' or set.percent == 'x' %}
@@ -121,6 +125,7 @@
                         {% else %}
                         <span class="percentage">{{set.percent}}%</span>
                         {% endif %}
+
                     </td>
                     {% endfor %} {# for set in lift.sets #}
 

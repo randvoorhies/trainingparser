@@ -5,6 +5,7 @@ import trainingparser
 import StringIO
 import zipfile
 import io
+import traceback
 
 app = Flask(__name__)
 
@@ -24,12 +25,26 @@ def uploaded_file():
 
 @app.route('/generatesingle', methods=['POST'])
 def generatesingle():
-    formatFileIO = StringIO.StringIO(session['formatFile'])
-    outputFileIO = StringIO.StringIO()
-    trainingparser.writeJinja(program=session['program'], template=formatFileIO, maxes=request.form, out=outputFileIO)
-    response = make_response(outputFileIO.getvalue())
-    response.headers["Content-Disposition"] = "attachment; filename=output.html"
-    return response
+    try:
+        formatFileIO = StringIO.StringIO(session['formatFile'])
+        outputFileIO = StringIO.StringIO()
+
+        maxes = dict((k.replace('max', ''), float(v)) for k,v in request.form.iteritems() if k.startswith('max'))
+
+        program = session['program']
+        trainee = request.form['trainee']
+
+        print 'Got Maxes:::::', maxes
+        trainingparser.writeJinja(program=program, template=formatFileIO, maxes=maxes, trainee=trainee, out=outputFileIO)
+        return Response(outputFileIO.getvalue(),
+                        headers={'Content-Disposition': 'attachment; filename={filename}.html'.format(filename=trainee.replace(' ', '_'))})
+    except:
+        flash('Unexpected Error! Send this to Rand: {}'.format(traceback.format_exc()), 'danger')
+        return redirect(url_for('index'))
+
+@app.route('/examplefiles')
+def examplefiles():
+    return render_template('examplefiles.html')
 
 @app.route('/generatebulk', methods=['POST'])
 def generatebulk():
@@ -46,8 +61,8 @@ def generatebulk():
             for name, maxes in maxesDB.iteritems():
                 formatFileIO = StringIO.StringIO(session['formatFile'])
                 outputFileIO = StringIO.StringIO()
-                trainingparser.writeJinja(program=session['program'], template=formatFileIO, maxes=maxes, out=outputFileIO)
-                outputZip.writestr(name + '.html', str(outputFileIO.getvalue()))
+                trainingparser.writeJinja(program=session['program'], template=formatFileIO, maxes=maxes, out=outputFileIO, trainee=name)
+                outputZip.writestr(name.replace(' ', '_') + '.html', str(outputFileIO.getvalue()))
 
         except RuntimeError as e:
             flash('Error parsing maxes file. Please contact Rand! ' + str(e), 'danger')
@@ -88,23 +103,6 @@ def uploadformat():
 
 @app.route('/')
 def index():
-    # elif 'process' in request.form:
-    #     if 'programFile' not in session or 'maxFile' not in session or 'formatFile' not in session:
-    #         print 'Shit!'
-    #         print session.keys()
-    #     else:
-    #         programFileIO = StringIO.StringIO(session['programFile'])
-    #         maxFileIO = StringIO.StringIO(session['maxFile'])
-    #         formatFileIO = StringIO.StringIO(session['formatFile'])
-
-    #         maxes = trainingparser.parseMaxes(maxFileIO)
-    #         program = trainingparser.parseTraining(programFileIO)
-
-    #         outputFileIO = StringIO.StringIO()
-    #         trainingparser.writeJinja(program=program, template=formatFileIO, maxes=maxes, out=outputFileIO)
-
-    #         print 'Processing...'
-    #         return render_template('processed_file.html', program=outputFileIO.getvalue())
     return render_template('index.html')
 
 

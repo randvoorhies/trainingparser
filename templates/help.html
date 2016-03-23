@@ -2,65 +2,66 @@
 {% set active_page = "help" %}
 {% block content %}
 
-<h1>Training File Format</h1>
+<div class="panel panel-default">
+    <div class="panel-heading"><h2>Training File Format</h2></div>
+    <div class="panel-body">
+        <h2>Training Days</h2>
+        <ul>
+            <li>Lines beginning with <code>Week #</code> (e.g. <code>Week 1</code>, <code>Week 2</code>, etc) will start a new week</li>
+            <li>Underneath each <code>Week #</code>, lines which contain <code>Monday</code>...<code>Sunday</code> will start a new training day</li>
+            <ul>
+                <li>Each line underneath a training day will be interpreted as a lift, followed by sets and reps for that lift.</li>
+            </ul>
+        </ul>
 
-<h2>Training Days</h2>
-<ul>
-    <li>Lines beginning with <code>Week #</code> (e.g. <code>Week 1</code>, <code>Week 2</code>, etc) will start a new week</li>
-    <li>Underneath each <code>Week #</code>, lines which contain <code>Monday</code>...<code>Sunday</code> will start a new training day</li>
-    <ul>
-        <li>Each line underneath a training day will be interpreted as a lift, followed by sets and reps for that lift.</li>
-    </ul>
-</ul>
+        <h2>Lifts</h2>
+        A typical lift line is written as follows:
+        <code>PSn {snatch}: 60/2 65/2 70/2 (75/1)2</code>
 
-<h2>Lifts</h2>
-A typical lift line is written as follows:
-<code>PSn {snatch}: 60/2 65/2 70/2 (75/1)2</code>
+        <ul>
+            <li>The section before the colon indicates the name of the lift, with an optional "base lift" name in curly braces (e.g. <code>{snatch}</code>).</li>
+            <li>If a base lift is present, it will be used to calculate any percentages on the rest of the line</li>
+            <li> Sets and reps are written after the colon</li>
+        </ul>
 
-<ul>
-    <li>The section before the colon indicates the name of the lift, with an optional "base lift" name in curly braces (e.g. <code>{snatch}</code>).</li>
-    <li>If a base lift is present, it will be used to calculate any percentages on the rest of the line</li>
-    <li> Sets and reps are written after the colon</li>
-</ul>
+        <h2>Sets and Reps</h2>
 
-<h2>Sets and Reps</h2>
+        Sets and reps are written as comma or space separated fields. The following are
+        the three valid ways to write the same sets/reps prescription: 
+        <ul>
+            <li><code>60%/3</code>:  1 set of 3 reps at 60%</li>
+            <li><code>60/3</code>: 1 set of 3 reps at 60%</li>
+            <li><code>(60/3)/1</code>: 1 set of 3 reps at 60%</li>
+        </ul>
 
-Sets and reps are written as comma or space separated fields. The following are
-the three valid ways to write the same sets/reps prescription: 
-<ul>
-    <li><code>60%/3</code>:  1 set of 3 reps at 60%</li>
-    <li><code>60/3</code>: 1 set of 3 reps at 60%</li>
-    <li><code>(60/3)/1</code>: 1 set of 3 reps at 60%</li>
-</ul>
+        All reps will ignore "+" characters, so that you can also write complexes as follows:
+        <ul>
+            <li><code>60%/3+3</code></li>
+            <li><code>60/3+3</code></li>
+            <li><code>(60/3+3)/1</code></li>
+        </ul>
 
-All reps will ignore "+" characters, so that you can also write complexes as follows:
-<ul>
-    <li><code>60%/3+3</code></li>
-    <li><code>60/3+3</code></li>
-    <li><code>(60/3+3)/1</code></li>
-</ul>
+        <h2>Go for a max!</h2>
 
-<h2>Go for a max!</h2>
+        Sometimes, you may want to give a freeform sentence instead of rigid sets and
+        reps for a given lift.  You can do this by enclosing your sentence in square
+        brackets and putting it in place of a sets/reps scheme. For example:
 
-Sometimes, you may want to give a freeform sentence instead of rigid sets and
-reps for a given lift.  You can do this by enclosing your sentence in square
-brackets and putting it in place of a sets/reps scheme. For example:
+        <code>Clean & Jerk: [singles to max (two misses/10 attempts)]</code>
 
-<code>Clean & Jerk: [singles to max (two misses/10 attempts)]</code>
+        <h2>Off Days</h2>
 
-<h2>Off Days</h2>
+        If you simply omit a day, it just won't be included in the output table. In the
+        example below, Tuesday of Week 1 just won't be included in the output. However,
+        you may want to explicitly state that a day is an "off" day. You can do this by
+        just writting the word <code>Off</code> underneath that day, which will create
+        a special row in the output file that just says "Off".
 
-If you simply omit a day, it just won't be included in the output table. In the
-example below, Tuesday of Week 1 just won't be included in the output. However,
-you may want to explicitly state that a day is an "off" day. You can do this by
-just writting the word <code>Off</code> underneath that day, which will create
-a special row in the output file that just says "Off".
+        <h2>Example</h2>
 
-<h2>Example</h2>
+        The following is a short snippet from an example input programming file:
 
-The following is a short snippet from an example input programming file:
-
-<pre>
+        <pre>
 Week 1
 Monday
 Power Snatch + Overhead Squat {snatch}: 60%/3+3, (70%/3+3)3
@@ -82,7 +83,30 @@ Week 2
 Tuesday
 Press: (X/5)4 
 PCl Abv Kn {clean}: [As many reps as possible until you explode]
-</pre>
+        </pre>
+    </div> {# panel-body #}
+</div> {# panel #}
+
+<div class="panel panel-default">
+    <div class="panel-heading"><h2>Maxes File Format</h2></div>
+    <div class="panel-body">
+
+        Maxes files are used to generate training outputs in bulk. Each line in the file will contain all of the maxes for a given trainee.
+
+        <pre>Rand Voorhies | snatch: 86, c&j: 105,  squat: 156
+Ilya Ilyin | snatch: 191, c&j: 246, squat: 350
+Lu Xiaojun | snatch: 176, c&j: 204, squat: 300</pre>
+
+        <ul>
+            <li> The trainee name should be first on the line, followed by a <code>|</code> character.  </li>
+            <li> Following the name should be a comma-separated list of maxes where each max is written as <code>MaxName: MaxValue</code></li>
+
+            <li> <span class="label label-warning">Note</span> These max names <b>must</b> be written exactly as they are in the training program file. For example, things will get screwed up if you write <code>c&j</code> in the training file, but write <code>Clean And Jerk</code> in the maxes file.</li>
+
+        </ul>
+
+    </div> {# panel-body #}
+</div> {# panel #}
 
 {% endblock %}
 

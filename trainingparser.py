@@ -175,7 +175,7 @@ def parseTraining(inFile):
     return program
 
 
-def writeJinja(program, template, maxes, out):
+def writeJinja(program, template, maxes, trainee, out):
     import jinja2
     env = jinja2.Environment()
 
@@ -183,7 +183,7 @@ def writeJinja(program, template, maxes, out):
     format_weight = lambda w: round(w * 2.0) / 2
     env.filters.update({'is_list': is_list, 'format_weight': format_weight})
     template = env.from_string(''.join(template.readlines()))
-    out.write(template.render(program=program, maxes=maxes))
+    out.write(template.render(program=program, maxes=maxes, trainee=trainee))
 
 
 # if __name__ == '__main__':

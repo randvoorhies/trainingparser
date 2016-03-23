@@ -7,7 +7,7 @@
 </div>
 
 <div class="row">
-    <div class="col-sm-8">
+    <div class="col-sm-12">
         <div class="panel panel-default">
             <div class="panel-heading">Upload a Program</div>
             <div class="panel-body">
@@ -83,39 +83,51 @@
             </div> {# panel-body #}
         </div> {# panel #}
     </div>{# col #}
-    <div class="col-sm-4">
+</div>{# row #}
+<div class="row">
 
-        <div class="panel panel-default">
-            <div class="panel-heading">Generate Output</div>
-            <div class="panel-body">
-                {% if 'programFile' in session %}
+    <div class="col-sm-12">
+    <div class="panel panel-default">
+        <div class="panel-heading">Generate Output</div>
+        <div class="panel-body">
 
-                <h3>Single Generation</h3>
+            {% if 'programFile' in session and 'formatFile' in session%}
+
+            <div class="col-sm-4"  style="border-right:1px solid #ccc;">
+
+                <h3>Single Output Generation</h3>
 
                 <form class="form-horizontal" action="generatesingle" method="post" id="uploadForm" >
+
+                    <div class="form-group">
+                        <label for="trainee" class="control-label col-sm-2">Trainee Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="trainee" id="trainee">
+                        </div>
+                    </div>
+
                     {% for baseLift in session.program.baseLifts %}
                     <div class="form-group">
                         <label for="lift{{baseLift}}" class="control-label col-sm-2">{{baseLift}}</label>
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" id="lift{{baseLift}}" value="100">
+                            <input type="text" class="form-control" id="lift{{baseLift}}" name="max{{baseLift}}" value="100">
                         </div>
                     </div>
                     {% endfor %}
 
                     {% set processEnabled = 'enabled' if 'formatFile' in session and 'programFile' in session else 'disabled' %}
                     <button type="submit" class="btn btn-success" name="process" value="process" {{processEnabled}}>
-                        <i class="fa fa-gears"></i>
-                        Generate HTML
+                        <i class="fa fa-gears"></i> Generate
                     </button>
 
                 </form>
-                <hr/>
+            </div> {# col #}
+            <div class="col-sm-8">
 
-                <h3>Bulk Generation</h3>
+                <h3>Bulk Output Generation</h3>
 
                 <form action="generatebulk" method="post" enctype=multipart/form-data>
                     <div class="form-group">
-                        <label for="maxesFile">Upload a bulk maxes file</label>
                         <input type="file" id="maxesFile" name="maxesFile" onchange="this.form.submit()" >
                         <p class="help-block">
                         Upload a bulk maxes file and generate the results as a .zip of output files
@@ -123,11 +135,13 @@
                     </div>
                 </form>
 
-
+                {% else %}
+                Please supply a training file and a format file...
                 {% endif %}
-            </div> {# panel-body #}
-        </div> {# panel #}
+            </div> {# col #}
+        </div> {# panel-body #}
+    </div> {# panel #}
 
-    </div>
+    </div> {# row #}
 </div><!-- row -->
 {% endblock %}
