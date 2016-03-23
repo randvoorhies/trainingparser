@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% set active_page = "examplefiles" %}
+{% block content %}
+
+<h1>Example Input Files</h1>
+
+<p>
+<a href="{{url_for('static', filename='exampleprogram.txt')}}"><i class="fa fa-download"></i> Example Program File</a>
+</p>
+<p>
+<a href="{{url_for('static', filename='examplemaxes.txt')}}"><i class="fa fa-download"></i> Example Maxes File</a>
+</p>
+<p>
+<a href="{{url_for('static', filename='exampleformat.html')}}"><i class="fa fa-download"></i> Example Format File</a> <span class="label label-warning">Note</span> Not viewable in a browser
+</p>
+
+{% endblock %}
