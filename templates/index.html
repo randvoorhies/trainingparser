@@ -115,7 +115,7 @@
                     </div>
                     {% endfor %}
 
-                    <input type="checkbox" name="generatePDF" checked>
+                    <input type="checkbox" name="generatePDF" unchecked>
 
                     {% set processEnabled = 'enabled' if 'formatFile' in session and 'programFile' in session else 'disabled' %}
                     <button type="submit" class="btn btn-success pull-right" name="process" value="process" {{processEnabled}}>
@@ -135,7 +135,7 @@
                         Upload a bulk maxes file and generate the results as a .zip of output files
                         </p>
                     </div>
-                    <input type="checkbox" name="generatePDF" checked>
+                    <input type="checkbox" name="generatePDF" unchecked>
                 </form>
 
                 {% else %}
@@ -157,7 +157,8 @@ $(function(){
   $("[name='generatePDF']").each(function(){
     $(this).bootstrapSwitch({
       onText: 'PDF',
-      offText: 'HTML'
+      offText: 'HTML',
+      disabled: true
     });
   });
 });
