@@ -9,6 +9,13 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}"/>
         <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-theme.min.css') }}"/>
         <link rel="stylesheet" href="{{ url_for('static', filename='font-awesome.min.css') }}"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-switch.min.css') }}"/>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+        <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap-switch.min.js') }}"></script>
+
         {% endblock %}
     </head>
     <body>
@@ -55,11 +62,9 @@
 
         {% block content %}{% endblock %}
     </div>
+        {% block javascript %}
+        {% endblock %}
 
-    {% block javascript %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='jquery.min.js') }}"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.js') }}"/>
-    {% endblock %}
     </body>
 </html>
 

@@ -93,7 +93,6 @@
         <div class="panel-body">
 
             {% if 'programFile' in session and 'formatFile' in session%}
-
             <div class="col-sm-4"  style="border-right:1px solid #ccc;">
 
                 <h3>Single Output Generation</h3>
@@ -116,8 +115,10 @@
                     </div>
                     {% endfor %}
 
+                    <input type="checkbox" name="generatePDF" checked>
+
                     {% set processEnabled = 'enabled' if 'formatFile' in session and 'programFile' in session else 'disabled' %}
-                    <button type="submit" class="btn btn-success" name="process" value="process" {{processEnabled}}>
+                    <button type="submit" class="btn btn-success pull-right" name="process" value="process" {{processEnabled}}>
                         <i class="fa fa-gears"></i> Generate
                     </button>
 
@@ -134,6 +135,7 @@
                         Upload a bulk maxes file and generate the results as a .zip of output files
                         </p>
                     </div>
+                    <input type="checkbox" name="generatePDF" checked>
                 </form>
 
                 {% else %}
@@ -145,4 +147,19 @@
 
     </div> {# row #}
 </div><!-- row -->
+{% endblock %}
+
+{% block head %}
+{{ super() }}
+
+<script>
+$(function(){
+  $("[name='generatePDF']").each(function(){
+    $(this).bootstrapSwitch({
+      onText: 'PDF',
+      offText: 'HTML'
+    });
+  });
+});
+</script>
 {% endblock %}
