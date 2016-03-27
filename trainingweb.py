@@ -1,3 +1,5 @@
+from __future__ import print_function
+import sys
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, make_response
 from flask.ext.session import Session
 import os
@@ -8,8 +10,16 @@ import io
 import traceback
 
 app = Flask(__name__)
+app.secret_key = "\x97J\xab\xdf\xa7 \x86;'5\x81\xff\x17\x91*\x8d\xd4o\xaeY\x93\xd9Z\xe0"  # os.urandom(24) 
+
+SESSION_TYPE = 'filesystem'
+app.config.from_object(__name__)
+Session(app)
 
 ALLOWED_EXTENSIONS = set(['txt', 'html', 'input', 'training', 'program', 'max', 'maxes'])
+
+def log(*objs):
+    print(*objs, file=sys.stderr)
 
 @app.route('/fonts/<fontname>')
 def fonts(fontname):
@@ -25,6 +35,7 @@ def uploaded_file():
 
 @app.route('/generatesingle', methods=['POST'])
 def generatesingle():
+    log('Generating single training program')
     try:
         formatFileIO = StringIO.StringIO(session['formatFile'])
         outputFileIO = StringIO.StringIO()
@@ -34,7 +45,6 @@ def generatesingle():
         program = session['program']
         trainee = request.form['trainee']
 
-        print 'Got Maxes:::::', maxes
         trainingparser.writeJinja(program=program, template=formatFileIO, maxes=maxes, trainee=trainee, out=outputFileIO)
         return Response(outputFileIO.getvalue(),
                         headers={'Content-Disposition': 'attachment; filename={filename}.html'.format(filename=trainee.replace(' ', '_'))})
@@ -74,6 +84,7 @@ def generatebulk():
 
 @app.route('/uploadprogram', methods=['POST'])
 def uploadprogram():
+    log('Uploading Program')
     programFile = request.files['programFile']
     session['programFile'] = programFile.read()
     session['programFileName'] = programFile.filename
@@ -99,7 +110,8 @@ def uploadformat():
     flash('Uploaded format file: {}'.format(formatFile.filename), 'info')
     session['formatFile'] = formatFile.read()
     session['formatFileName'] = formatFile.filename
-    return redirect(url_for('index'))
+    log('Uploaded format file. Redirecting to / : {}'.format(url_for('index')))
+    return redirect('/')
 
 @app.route('/')
 def index():
@@ -110,6 +122,5 @@ if __name__ == '__main__':
     app.debug = True
     SESSION_TYPE = 'filesystem'
     app.config.from_object(__name__)
-    app.secret_key = '1234567' # os.urandom(24) 
     Session(app)
     app.run()
