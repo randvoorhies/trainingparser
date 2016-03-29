@@ -78,9 +78,15 @@ def generatebulk():
 
             for name, maxes in maxesDB.iteritems():
                 formatFileIO = StringIO.StringIO(session['formatFile'])
-                outputFileIO = StringIO.StringIO()
-                trainingparser.writeJinja(program=session['program'], template=formatFileIO, maxes=maxes, out=outputFileIO, trainee=name)
-                outputZip.writestr(name.replace(' ', '_') + '.html', str(outputFileIO.getvalue()))
+                htmlFileIO = StringIO.StringIO()
+                trainingparser.writeJinja(program=session['program'], template=formatFileIO, maxes=maxes, out=htmlFileIO, trainee=name)
+
+                if 'generatePDF' in request.form:
+                    log('Writing pdf for', name)
+                    pdfFile = pdfkit.from_string(htmlFileIO.getvalue(), False)
+                    outputZip.writestr(name.replace(' ', '_') + '.pdf', str(pdfFile))
+                else:
+                    outputZip.writestr(name.replace(' ', '_') + '.html', str(htmlFileIO.getvalue()))
 
         except RuntimeError as e:
             flash('Error parsing maxes file. Please contact Rand! ' + str(e), 'danger')
