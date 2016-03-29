@@ -43,43 +43,6 @@
                     {% endif %}
                 </form>
 
-
-                {#
-                <form action="" method="post" id="uploadForm" enctype=multipart/form-data>
-                    <div class="form-group">
-                        <label for="programFile">Program File</label>
-                        <input type="file" id="programFile" name="programFile">
-                        {% if 'programFile' in session %}
-                        <p class="help-block">
-                        Upload a program file - or use the already uploaded file {{ session.programFileName }} 
-                        <i class="fa fa-check" style="color: green"></i>
-                        </p>
-                        {% else %}
-                        <p class="help-block">Upload a program file - None loaded 
-                        <i class="fa fa-times" style="color: red"></i></p>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="formatFile">Format File</label>
-                        <input type="file" id="formatFile" accept=".html" name="formatFile">
-                        {% if 'formatFile' in session %}
-                        <p class="help-block">
-                        Upload a format style file (.html) - or use the already uploaded {{ session.formatFileName }} 
-                        <i class="fa fa-check" style="color: green"></i>
-                        </p>
-                        {% else %}
-                        <p class="help-block">Upload a format style file (.html) - None loaded 
-                        <i class="fa fa-times" style="color: red"></i></p>
-                        {% endif %}
-                    </div>
-
-                    <button type="submit" class="btn btn-default" name="upload" value="upload">
-                        <i class="fa fa-cloud-upload"></i>
-                        Upload...
-                    </button>
-                    #}
-
                 </form>
             </div> {# panel-body #}
         </div> {# panel #}
@@ -157,8 +120,7 @@ $(function(){
   $("[name='generatePDF']").each(function(){
     $(this).bootstrapSwitch({
       onText: 'PDF',
-      offText: 'HTML',
-      disabled: true
+      offText: 'HTML'
     });
   });
 });

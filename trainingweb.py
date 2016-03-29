@@ -8,6 +8,7 @@ import StringIO
 import zipfile
 import io
 import traceback
+import pdfkit
 
 app = Flask(__name__)
 app.secret_key = "\x97J\xab\xdf\xa7 \x86;'5\x81\xff\x17\x91*\x8d\xd4o\xaeY\x93\xd9Z\xe0"  # os.urandom(24) 
@@ -38,16 +39,23 @@ def generatesingle():
     log('Generating single training program')
     try:
         formatFileIO = StringIO.StringIO(session['formatFile'])
-        outputFileIO = StringIO.StringIO()
+
+        htmlFileIO = StringIO.StringIO()
 
         maxes = dict((k.replace('max', ''), float(v)) for k,v in request.form.iteritems() if k.startswith('max'))
 
         program = session['program']
         trainee = request.form['trainee']
 
-        trainingparser.writeJinja(program=program, template=formatFileIO, maxes=maxes, trainee=trainee, out=outputFileIO)
-        return Response(outputFileIO.getvalue(),
-                        headers={'Content-Disposition': 'attachment; filename={filename}.html'.format(filename=trainee.replace(' ', '_'))})
+        trainingparser.writeJinja(program=program, template=formatFileIO, maxes=maxes, trainee=trainee, out=htmlFileIO)
+
+        if 'generatePDF' in request.form:
+            pdfFile = pdfkit.from_string(htmlFileIO.getvalue(), False)
+            return Response(pdfFile,
+                            headers={'Content-Disposition': 'attachment; filename={filename}.pdf'.format(filename=trainee.replace(' ', '_'))})
+        else:
+            return Response(htmlFileIO.getvalue(),
+                            headers={'Content-Disposition': 'attachment; filename={filename}.html'.format(filename=trainee.replace(' ', '_'))})
     except:
         flash('Unexpected Error! Send this to Rand: {}'.format(traceback.format_exc()), 'danger')
         return redirect(url_for('index'))
